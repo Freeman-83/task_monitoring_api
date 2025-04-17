@@ -13,6 +13,11 @@ class Group(models.Model):
         max_length=200
     )
 
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Тип задачи'
+        verbose_name_plural = 'Типы задач'
+
     def __str__(self) -> str:
         return self.name
 

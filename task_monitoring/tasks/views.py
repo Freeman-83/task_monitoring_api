@@ -55,7 +55,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes=(permissions.AllowAny,)
+    permission_classes=(permissions.IsAdminUser,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TaskFilterSet
     ordering_fields = ['assignment_date',]
