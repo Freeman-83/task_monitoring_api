@@ -15,7 +15,6 @@ class CustomUserSerializer(UserSerializer):
         model = CustomUser
         fields = (
             'id',
-            'username',
             'email',
             'first_name',
             'last_name',
@@ -30,22 +29,30 @@ class RegisterUserSerializer(UserCreateSerializer):
         model = CustomUser
         fields = (
             'id',
-            'username',
             'email',
             'first_name',
             'last_name',
             'password'
         )
 
-    def validate_username(self, data):
-        username = data
-        error_symbols_list = []
+    def validate_email(self, value):
+        """Проверка, что указанный адрес эл. почты не занят."""
 
-        for symbol in username:
-            if not re.search(r'^[\w.@+-]+\Z', symbol):
-                error_symbols_list.append(symbol)
-        if error_symbols_list:
+        if CustomUser.objects.filter(email=value).exists():
             raise serializers.ValidationError(
-                f'Символы {"".join(error_symbols_list)} недопустимы'
+                "На этот адрес эл. почты уже зарегистрирован аккаунт."
             )
-        return data
+        return value
+
+    # def validate_username(self, data):
+    #     username = data
+    #     error_symbols_list = []
+
+    #     for symbol in username:
+    #         if not re.search(r'^[\w.@+-]+\Z', symbol):
+    #             error_symbols_list.append(symbol)
+    #     if error_symbols_list:
+    #         raise serializers.ValidationError(
+    #             f'Символы {"".join(error_symbols_list)} недопустимы'
+    #         )
+    #     return data

@@ -7,12 +7,11 @@ from .models import CustomUser
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'username',
+        'email',
         'first_name',
         'last_name',
-        'email',
         'chat_id'
     )
-    list_display_links = ('username',)
-    search_fields = ('username', 'last_name')
+    list_display_links = ('email',)
+    search_fields = ('email', 'last_name')
     empty_value_display = '---'
