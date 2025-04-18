@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, render
@@ -16,16 +17,16 @@ from rest_framework import (
     viewsets
 )
 
-from django.shortcuts import render
-
-from tasks.models import Group, Task
-
 from tasks.models import Group, Task
 
 from tasks.serializers import GroupSerializer, TaskSerializer
 
-
 from tasks.filters import TaskFilterSet
+
+from tasks.permissions import IsAdminOrExecutor
+
+
+User = get_user_model()
 
 
 @extend_schema(tags=['Тип задач'])
@@ -39,7 +40,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes=(permissions.AllowAny,)
+    permission_classes=(permissions.IsAdminUser,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     ordering_fields = ['name',]
 
@@ -53,9 +54,24 @@ class GroupViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     """Вьюсет Задачи."""
 
-    queryset = Task.objects.all()
+    queryset = Task.objects.select_related(
+        'group'
+    ).order_by(
+        'execution_date'
+    ).all()
     serializer_class = TaskSerializer
-    permission_classes=(permissions.IsAdminUser,)
+    permission_classes=(IsAdminOrExecutor,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TaskFilterSet
     ordering_fields = ['assignment_date',]
+
+    def get_queryset(self):
+        if self.action == 'list' and not self.request.user.is_staff:
+            return Task.objects.filter(
+                responsible_executor=self.request.user
+            ).select_related(
+                'group'
+            ).order_by(
+                'execution_date'
+            ).all()
+        return super().get_queryset()

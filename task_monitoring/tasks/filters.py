@@ -16,6 +16,7 @@ class TaskFilterSet(FilterSet):
     assignment_date = AllValuesMultipleFilter(field_name='assignment_date')
     execution_date = AllValuesMultipleFilter(field_name='execution_date')
     responsible_executor = AllValuesMultipleFilter(field_name='responsible_executor')
+    execution_status = AllValuesMultipleFilter(field_name='execution_status')
 
     class Meta:
         model = Task
@@ -23,5 +24,6 @@ class TaskFilterSet(FilterSet):
             'group',
             'assignment_date',
             'execution_date',
-            'responsible_executor'
+            'responsible_executor',
+            'execution_status'
         )

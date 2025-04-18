@@ -8,7 +8,7 @@ from users.models import CustomUser
 
 from users.serializers import CustomUserSerializer
 
-# from api.permissions import UserPermission
+from tasks.permissions import IsAdminOrExecutor
 
 
 @extend_schema(tags=['Пользователи'])
@@ -25,6 +25,12 @@ class CustomUserViewSet(UserViewSet):
 
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
+    permission_classes = (IsAdminOrExecutor,)
+
+    def get_queryset(self):
+        if self.action == 'list' and not self.request.user.is_staff:
+            return CustomUser.objects.filter(pk=self.request.user.id)
+        return super().get_queryset()
 
     def get_permissions(self):
         if self.action == 'me':

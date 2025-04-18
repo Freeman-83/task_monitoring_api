@@ -65,7 +65,7 @@ class CustomUser(AbstractUser):
     objects = CustomUserManager()
 
     class Meta:
-        ordering = ['email']
+        ordering = ['last_name']
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         constraints = [
@@ -80,4 +80,4 @@ class CustomUser(AbstractUser):
         ]
 
     def __str__(self):
-        return self.email
+        return f'{self.last_name} {self.first_name}'

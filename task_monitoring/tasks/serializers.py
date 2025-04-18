@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from tasks.models import Task, Group
+from users.serializers import CustomUserSerializer
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -16,9 +17,12 @@ class GroupSerializer(serializers.ModelSerializer):
         )
 
 
-
 class TaskSerializer(serializers.ModelSerializer):
     """Сериализатор Задачи."""
+
+    author = CustomUserSerializer(
+        default=serializers.CurrentUserDefault()
+    )
 
     class Meta:
         model = Task

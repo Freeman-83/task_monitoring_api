@@ -1,6 +1,5 @@
 from django.contrib import admin
 
-
 from .models import Group, Task
 
 
@@ -25,7 +24,8 @@ class TaskAdmin(admin.ModelAdmin):
         'group',
         'assignment_date',
         'execution_date',
-        'responsible_executor'
+        'responsible_executor',
+        'execution_status'
     )
     search_fields = (
         'title',
@@ -41,6 +41,7 @@ class TaskAdmin(admin.ModelAdmin):
         'group',
         'assignment_date',
         'execution_date',
-        'responsible_executor'
+        'responsible_executor',
+        'execution_status'
     )
     empty_value_display = '---'

@@ -18,12 +18,20 @@ class Group(models.Model):
         verbose_name = 'Тип задачи'
         verbose_name_plural = 'Типы задач'
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.name
 
 
 class Task(models.Model):
     """Модель Задачи."""
+
+    COMPLETED = 'completed'
+    ON_EXECUTION = 'on_execution'
+
+    EXECUTION_STATUS = (
+        (COMPLETED, 'исполнено'),
+        (ON_EXECUTION, 'на исполнении')
+    )
 
     title = models.CharField(
         'Заголовок',
@@ -33,30 +41,39 @@ class Task(models.Model):
         'Описание',
         max_length=10000
     )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='tasks_from'
-    )
     group = models.ForeignKey(
         Group,
+        verbose_name='Тип поручения',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
-        related_name='tasks',
-        verbose_name='Группа',
+        related_name='tasks'
     )
-    assignment_date = models.DateTimeField(
-        'Дата поручения',
-        auto_now_add=True
-    )
-    execution_date = models.DateTimeField(
-        'Дата исполнения',
+    author = models.ForeignKey(
+        User,
+        verbose_name='Инициатор',
+        on_delete=models.CASCADE,
+        related_name='tasks_from'
     )
     responsible_executor = models.ForeignKey(
         User,
+        verbose_name='Исполнитель',
         on_delete=models.CASCADE,
         related_name='tasks_for'
+    )
+    assignment_date = models.DateField(
+        'Дата поручения',
+        auto_now_add=True,
+        db_index=True
+    )
+    execution_date = models.DateField(
+        'Дата исполнения',
+        db_index=True
+    )
+    execution_status = models.CharField(
+        'Статус исполнения',
+        choices=EXECUTION_STATUS,
+        default=ON_EXECUTION
     )
 
     class Meta:
@@ -73,5 +90,5 @@ class Task(models.Model):
             ),
         ]
 
-    def __str__(self) -> str:
+    def __str__(self):
         return self.title
