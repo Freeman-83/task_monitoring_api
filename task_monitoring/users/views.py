@@ -1,4 +1,5 @@
 from rest_framework import permissions, viewsets
+from django.shortcuts import get_object_or_404
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -25,7 +26,7 @@ class CustomUserViewSet(UserViewSet):
 
     queryset = CustomUser.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = (IsAdminOrExecutor,)
+    permission_classes = (permissions.IsAdminUser,)
 
     def get_queryset(self):
         if self.action == 'list' and not self.request.user.is_staff:
