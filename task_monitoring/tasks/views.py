@@ -56,6 +56,8 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     queryset = Task.objects.select_related(
         'group'
+    ).prefetch_related(
+        'responsible_executors'
     ).order_by(
         'execution_date'
     ).all()
@@ -71,6 +73,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                 responsible_executor=self.request.user
             ).select_related(
                 'group'
+            ).prefetch_related(
+                'responsible_executors'
             ).order_by(
                 'execution_date'
             ).all()

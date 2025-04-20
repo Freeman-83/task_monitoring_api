@@ -33,6 +33,23 @@ class CustomUserManager(UserManager):
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
+    
+
+class Department(models.Model):
+    """Модель Подразделения."""
+
+    name = models.CharField(
+        'Наименование',
+        max_length=1000,
+        unique=True
+    )
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Подразделение'
+        verbose_name_plural = 'Подразделения'
+
+    def __str__(self):
+        return f'{self.name}'
 
 
 class CustomUser(AbstractUser):
@@ -51,6 +68,13 @@ class CustomUser(AbstractUser):
     last_name = models.CharField(
         'Фамилия',
         max_length=150
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users'
     )
     chat_id = models.CharField(
         'id чата пользователя',

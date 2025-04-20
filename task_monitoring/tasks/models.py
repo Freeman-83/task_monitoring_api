@@ -55,11 +55,10 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         related_name='tasks_from'
     )
-    responsible_executor = models.ForeignKey(
+    responsible_executors = models.ManyToManyField(
         User,
-        verbose_name='Исполнитель',
-        on_delete=models.CASCADE,
-        related_name='tasks_for'
+        through='TaskUser',
+        verbose_name='Исполнители'
     )
     assignment_date = models.DateField(
         'Дата поручения',
@@ -92,3 +91,31 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class TaskUser(models.Model):
+    """Модель отношений Задача - Исполнитель."""
+
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='in_users'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='in_tasks'
+    )
+
+    class Meta:
+        verbose_name = 'Task - User'
+        verbose_name_plural = 'Tasks - Users'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['task', 'user'],
+                name='unique_task_for_user'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.task} - {self.user}'
