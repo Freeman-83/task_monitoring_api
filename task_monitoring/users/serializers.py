@@ -68,7 +68,17 @@ class CustomUserSerializer(UserSerializer):
         data = super().to_representation(instance)
         if data['department']:
             data['department'] = instance.department.name
-        data['tasks'] = instance.tasks.values()
+        
+        res = []
+        for task in instance.tasks.values():
+            res.append(
+                {'Название': task['title'],
+                 # 'Тип поручения': task['group'],
+                 'Дата поручения': task['assignment_date'],
+                 'Дата исполнения': task['execution_date'],
+                 'Статус': task['execution_status']}
+            )
+        data['tasks'] = res
         return data
 
 
