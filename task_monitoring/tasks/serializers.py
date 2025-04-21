@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from tasks.models import Task, Group
-from users.serializers import CustomUserSerializer
+from users.serializers import CustomUserSerializer, CustomUserContextSerializer
 
 
 User = get_user_model()
@@ -29,7 +29,7 @@ class TaskSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(
         default=serializers.CurrentUserDefault()
     )
-    responsible_executors = serializers.PrimaryKeyRelatedField(
+    executors = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         many=True
     )
@@ -42,7 +42,7 @@ class TaskSerializer(serializers.ModelSerializer):
             'description',
             'group',
             'author',
-            'responsible_executors',
+            'executors',
             'assignment_date',
             'execution_date'
         )
@@ -57,18 +57,31 @@ class TaskSerializer(serializers.ModelSerializer):
             ]
         )
     ]
+    
+
+class TaskGetSerializer(serializers.ModelSerializer):
+    """Контекстный сериализатор Задачи."""
+
+    author = CustomUserContextSerializer(read_only=True)
+    executors = CustomUserContextSerializer(
+        read_only=True,
+        many=True,
+    )
+
+    class Meta:
+        model = Task
+        fields = (
+            'id',
+            'title',
+            'description',
+            'group',
+            'author',
+            'executors',
+            'assignment_date',
+            'execution_date'
+        )
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['responsible_executors'] = instance.responsible_executors.values()
+        data['group'] = instance.group.name
         return data
-
-    # @transaction.atomic
-    # def create(self, validated_data):
-    #     executors_list = validated_data.pop('responsible_executors')
-
-    #     task = Task.objects.create(**validated_data)
-
-    #     task.responsible_executors.set(executors_list)
-
-    #     return task

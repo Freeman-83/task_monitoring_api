@@ -1,3 +1,5 @@
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Sum
@@ -19,7 +21,7 @@ from rest_framework import (
 
 from tasks.models import Group, Task
 
-from tasks.serializers import GroupSerializer, TaskSerializer
+from tasks.serializers import GroupSerializer, TaskSerializer, TaskGetSerializer
 
 from tasks.filters import TaskFilterSet
 
@@ -57,7 +59,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.select_related(
         'group'
     ).prefetch_related(
-        'responsible_executors'
+        'executors'
     ).order_by(
         'execution_date'
     ).all()
@@ -74,8 +76,13 @@ class TaskViewSet(viewsets.ModelViewSet):
             ).select_related(
                 'group'
             ).prefetch_related(
-                'responsible_executors'
+                'executors'
             ).order_by(
                 'execution_date'
             ).all()
         return super().get_queryset()
+    
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return TaskGetSerializer
+        return super().get_serializer_class()

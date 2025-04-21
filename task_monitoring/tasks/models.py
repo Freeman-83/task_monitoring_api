@@ -44,20 +44,20 @@ class Task(models.Model):
     group = models.ForeignKey(
         Group,
         verbose_name='Тип поручения',
-        null=True,
-        blank=True,
+        related_name='tasks',
         on_delete=models.SET_NULL,
-        related_name='tasks'
+        null=True,
+        blank=True
     )
     author = models.ForeignKey(
         User,
         verbose_name='Инициатор',
-        on_delete=models.CASCADE,
-        related_name='tasks_from'
+        related_name='tasks_from',
+        on_delete=models.CASCADE
     )
-    responsible_executors = models.ManyToManyField(
+    executors = models.ManyToManyField(
         User,
-        through='TaskUser',
+        related_name='tasks',
         verbose_name='Исполнители'
     )
     assignment_date = models.DateField(
@@ -93,29 +93,4 @@ class Task(models.Model):
         return self.title
 
 
-class TaskUser(models.Model):
-    """Модель отношений Задача - Исполнитель."""
 
-    task = models.ForeignKey(
-        Task,
-        on_delete=models.CASCADE,
-        related_name='in_users'
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='in_tasks'
-    )
-
-    class Meta:
-        verbose_name = 'Task - User'
-        verbose_name_plural = 'Tasks - Users'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['task', 'user'],
-                name='unique_task_for_user'
-            )
-        ]
-
-    def __str__(self):
-        return f'{self.task} - {self.user}'

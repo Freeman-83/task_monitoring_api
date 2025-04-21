@@ -1,11 +1,6 @@
 from django.contrib import admin
 
-from .models import Group, Task, TaskUser
-
-
-class TaskToUser(admin.TabularInline):
-    model = TaskUser
-    min_num = 1
+from .models import Group, Task
 
 
 @admin.register(Group)
@@ -29,7 +24,6 @@ class TaskAdmin(admin.ModelAdmin):
         'group',
         'assignment_date',
         'execution_date',
-        # 'responsible_executors',
         'execution_status'
     )
     search_fields = (
@@ -38,7 +32,6 @@ class TaskAdmin(admin.ModelAdmin):
         'group',
         'assignment_date',
         'execution_date',
-        # 'responsible_executors'
     )
     list_filter = (
         'title',
@@ -46,17 +39,7 @@ class TaskAdmin(admin.ModelAdmin):
         'group',
         'assignment_date',
         'execution_date',
-        # 'responsible_executors',
         'execution_status'
     )
+    list_display_links = ('title',)
     empty_value_display = '---'
-
-    inlines = [TaskToUser,]
-
-
-@admin.register(TaskUser)
-class TaskUserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'task', 'user')
-    search_fields = ('task', 'user')
-    list_filter = ('task', 'user')
-    empty_value_display = '-пусто-'
