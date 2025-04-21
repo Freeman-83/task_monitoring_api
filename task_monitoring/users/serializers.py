@@ -1,6 +1,7 @@
 import re
 
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 
 from djoser.serializers import UserSerializer, UserCreateSerializer
 
@@ -8,6 +9,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from .models import Department
+from tasks.models import Group
 
 
 User = get_user_model()
@@ -68,17 +70,8 @@ class CustomUserSerializer(UserSerializer):
         data = super().to_representation(instance)
         if data['department']:
             data['department'] = instance.department.name
-        
-        res = []
-        for task in instance.tasks.values():
-            res.append(
-                {'Название': task['title'],
-                 # 'Тип поручения': task['group'],
-                 'Дата поручения': task['assignment_date'],
-                 'Дата исполнения': task['execution_date'],
-                 'Статус': task['execution_status']}
-            )
-        data['tasks'] = res
+        data['tasks'] = instance.tasks.values()
+
         return data
 
 
