@@ -9,7 +9,6 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from .models import Department
-from tasks.models import Group
 
 
 User = get_user_model()
