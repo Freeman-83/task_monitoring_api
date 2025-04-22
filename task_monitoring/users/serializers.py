@@ -83,7 +83,8 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
-            'department'
+            'department',
+            'chat_id'
         )
     
     def to_representation(self, instance):
