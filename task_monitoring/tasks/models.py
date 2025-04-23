@@ -27,10 +27,12 @@ class Task(models.Model):
 
     COMPLETED = 'completed'
     ON_EXECUTION = 'on_execution'
+    OVERDUE = 'overdue'
 
     EXECUTION_STATUS = (
         (COMPLETED, 'исполнено'),
-        (ON_EXECUTION, 'на исполнении')
+        (ON_EXECUTION, 'на исполнении'),
+        (OVERDUE, 'просрочено')
     )
 
     title = models.CharField(
