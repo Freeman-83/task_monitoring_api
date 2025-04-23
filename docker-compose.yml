@@ -1,0 +1,30 @@
+services:
+    db:
+        image: postgres:16.2
+        env_file: .env
+        volumes:
+            - db_volume:/var/lib/postgresql/data
+
+    backend:
+        build: ./task_monitoring
+        env_file: .env
+        volumes:
+            - static_volume:/app/collected_static
+            - media_volume:/app/media
+        depends_on:
+            - db
+
+    gateway:
+        build: ./nginx
+        ports:
+            - 80:80
+        volumes:
+            - static_volume:/app/django/static
+            - media_volume:/app/django/media
+        depends_on:
+            - backend
+
+volumes:
+    db_volume:
+    static_volume:
+    media_volume:
