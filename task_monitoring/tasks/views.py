@@ -10,6 +10,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
+from rest_framework.decorators import action
+
 from rest_framework import (
     filters,
     mixins,
@@ -25,7 +27,7 @@ from tasks.serializers import GroupSerializer, TaskSerializer, TaskGetSerializer
 
 from tasks.filters import TaskFilterSet
 
-from tasks.permissions import IsAdminOrExecutor
+from tasks.permissions import IsAdminOrManagerOrReadOnly
 
 
 User = get_user_model()
@@ -64,25 +66,87 @@ class TaskViewSet(viewsets.ModelViewSet):
         'execution_date'
     ).all()
     serializer_class = TaskSerializer
-    permission_classes=(IsAdminOrExecutor,)
+    permission_classes=(IsAdminOrManagerOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TaskFilterSet
-    ordering_fields = ['assignment_date',]
+    ordering_fields = ['execution_date',]
 
     def get_queryset(self):
-        if self.action == 'list' and not self.request.user.is_staff:
-            return Task.objects.filter(
-                responsible_executor=self.request.user
-            ).select_related(
-                'group'
-            ).prefetch_related(
-                'executors'
-            ).order_by(
-                'execution_date'
-            ).all()
+        if self.action in ['list', 'retrieve'] and not self.request.user.is_staff:
+            if self.request.user.is_director():
+                authors_queryset = Task.objects.filter(
+                    author=self.request.user.id
+                ).select_related(
+                    'group'
+                ).prefetch_related(
+                    'executors'
+                ).order_by(
+                    'execution_date'
+                ).all()
+
+                return authors_queryset
+
+            elif self.request.user.is_deputy_director() or self.request.user.is_head_department():
+                authors_queryset = Task.objects.filter(
+                    author=self.request.user.id
+                ).select_related(
+                    'group'
+                ).prefetch_related(
+                    'executors'
+                ).order_by(
+                    'execution_date'
+                ).all()
+
+                executors_queryset = Task.objects.filter(
+                    executors__id=self.request.user.id
+                ).select_related(
+                    'group'
+                ).prefetch_related(
+                    'executors'
+                ).order_by(
+                    'execution_date'
+                ).all()
+
+                result_queryset = authors_queryset | executors_queryset
+
+                return result_queryset
+
+            else:
+                executors_queryset = Task.objects.filter(
+                    executors__id=self.request.user.id
+                ).select_related(
+                    'group'
+                ).prefetch_related(
+                    'executors'
+                ).order_by(
+                    'execution_date'
+                ).all()
+
+                return executors_queryset
+
         return super().get_queryset()
-    
+
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
             return TaskGetSerializer
         return super().get_serializer_class()
+
+    # def create()
+
+
+    # @extend_schema(summary='Удаление отчетов за определенный период')
+    # @action(
+    #     methods=['POST'],
+    #     detail=False,
+    #     permission_classes=[permissions.AllowAny]
+    # )
+    # def clear_report_period(self, request):
+    #     message, result = delete_report(request.data, self.queryset)
+    #     status_data = {
+    #         'not_found_error': status.HTTP_404_NOT_FOUND,
+    #         'report_period_error': status.HTTP_400_BAD_REQUEST,
+    #         'success_status': status.HTTP_204_NO_CONTENT
+    #     }
+
+    #     return Response(data=message, status=status_data[result])
+

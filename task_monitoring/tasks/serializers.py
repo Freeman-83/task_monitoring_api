@@ -31,6 +31,7 @@ class TaskSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(
         default=serializers.CurrentUserDefault()
     )
+    
     executors = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
         many=True

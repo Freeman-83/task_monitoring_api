@@ -85,7 +85,7 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
-            'chat_id'
+            'chat_id',
             'department',
             'role'
         )

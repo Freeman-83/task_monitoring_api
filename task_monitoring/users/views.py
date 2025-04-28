@@ -10,7 +10,7 @@ from users.models import CustomUser
 
 from users.serializers import CustomUserSerializer
 
-from tasks.permissions import IsAdminOrExecutor
+from tasks.permissions import IsAdminOrManagerOrReadOnly
 
 
 @extend_schema(tags=['Пользователи'])

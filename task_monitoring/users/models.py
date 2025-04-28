@@ -43,6 +43,14 @@ class Department(models.Model):
         max_length=1000,
         unique=True
     )
+    curator = models.ForeignKey(
+        'CustomUser',
+        related_name='subordinate_departments',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+
     class Meta:
         ordering = ['name']
         verbose_name = 'Подразделение'
@@ -92,9 +100,9 @@ class CustomUser(AbstractUser):
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,
+        related_name='users',
         null=True,
-        blank=True,
-        related_name='users'
+        blank=True
     )
     role = models.CharField(
         'Статус',
@@ -122,6 +130,22 @@ class CustomUser(AbstractUser):
                 name='unique_user'
             ),
         ]
+
+    def is_director(self):
+        return self.role == 'Директор'
+    
+    def is_deputy_director(self):
+        return self.role == 'Заместитель директора'
+    
+    def is_head_department(self):
+        return self.role == 'Начальник отдела'
+    
+    def is_employee(self):
+        return self.role == 'Сотрудник отдела'
+    
+    def is_admin(self):
+        return self.is_staff or self.role == 'Администратор'
+
 
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
