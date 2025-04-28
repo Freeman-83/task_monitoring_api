@@ -54,6 +54,20 @@ class Department(models.Model):
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
+
+    DIRECTOR = 'Директор'
+    DEPUTY_DIRECTOR = 'Заместитель директора'
+    HEAD_DEPARTMENT = 'Начальник отдела'
+    EMPLOYEE_DEPARTMENT = 'Сотрудник отдела'
+    ADMIN = 'Администратор'
+
+    ROLE_CHOICES = [
+        (DIRECTOR, 'Директор'),
+        (DEPUTY_DIRECTOR, 'Заместитель директора'),
+        (HEAD_DEPARTMENT, 'Начальник отдела'),
+        (EMPLOYEE_DEPARTMENT, 'Сотрудник отдела'),
+        (ADMIN, 'Администратор')
+    ]
     
     username = None
     email = models.EmailField(
@@ -69,6 +83,12 @@ class CustomUser(AbstractUser):
         'Фамилия',
         max_length=150
     )
+    chat_id = models.CharField(
+        'id чата пользователя',
+        max_length=100,
+        null=True,
+        blank=True
+    )
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,
@@ -76,11 +96,11 @@ class CustomUser(AbstractUser):
         blank=True,
         related_name='users'
     )
-    chat_id = models.CharField(
-        'id чата пользователя',
-        max_length=100,
-        null=True,
-        blank=True
+    role = models.CharField(
+        'Статус',
+        max_length=64,
+        choices=ROLE_CHOICES,
+        default=EMPLOYEE_DEPARTMENT
     )
 
     USERNAME_FIELD = 'email'

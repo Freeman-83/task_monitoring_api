@@ -21,9 +21,11 @@ class CustomUserAdmin(admin.ModelAdmin):
         'email',
         'first_name',
         'last_name',
+        'chat_id',
         'department',
-        'chat_id'
+        'role'
     )
     list_display_links = ('email',)
     search_fields = ('email', 'last_name')
+    list_filter = ('department', 'role')
     empty_value_display = '---'

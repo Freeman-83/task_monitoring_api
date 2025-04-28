@@ -25,7 +25,8 @@ class RegisterUserSerializer(UserCreateSerializer):
             'first_name',
             'last_name',
             'password',
-            'department'
+            'department',
+            'role'
         )
 
     def validate_email(self, value):
@@ -60,8 +61,9 @@ class CustomUserSerializer(UserSerializer):
             'email',
             'first_name',
             'last_name',
-            'department',
             'chat_id',
+            'department',
+            'role',
             'tasks'
         )
 
@@ -83,8 +85,9 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
-            'department',
             'chat_id'
+            'department',
+            'role'
         )
     
     def to_representation(self, instance):
