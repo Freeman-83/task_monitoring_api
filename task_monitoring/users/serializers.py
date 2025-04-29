@@ -85,6 +85,7 @@ class CustomUserSerializer(UserSerializer):
                     'group': task.group.name,
                     'title': task.title,
                     'number': task.number,
+                    'author': f'{task.author.last_name} {task.author.first_name}',
                     'assignment_date': task.assignment_date,
                     'execution_date': task.execution_date,
                     'execution_status': task.execution_status
