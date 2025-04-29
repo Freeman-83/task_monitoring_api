@@ -55,6 +55,8 @@ class DepartmentSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(UserSerializer):
     """Кастомный сериализатор Пользователя."""
 
+    tasks_count = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -65,14 +67,29 @@ class CustomUserSerializer(UserSerializer):
             'chat_id',
             'department',
             'role',
+            'tasks_count',
             'tasks'
         )
+
+    def get_tasks_count(self, user):
+        return user.tasks.count()
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         if data['department']:
             data['department'] = instance.department.name
-        data['tasks'] = instance.tasks.values()
+        data['tasks'] = []
+        for task in instance.tasks.all():
+            data['tasks'].append(
+                {
+                    'group': task.group.name,
+                    'title': task.title,
+                    'number': task.number,
+                    'assignment_date': task.assignment_date,
+                    'execution_date': task.execution_date,
+                    'execution_status': task.execution_status
+                }
+            )
 
         return data
 

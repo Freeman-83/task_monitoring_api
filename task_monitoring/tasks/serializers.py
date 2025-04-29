@@ -97,7 +97,6 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'assignment_date',
             'execution_date'
         )
-        depth = 5
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

@@ -38,21 +38,21 @@ class Group(models.Model):
 
 class Task(models.Model):
     """Модель Задачи."""
-
+    
     title = models.CharField(
         'Заголовок',
         max_length=512
-    )
-    assignment_date = models.DateField(
-        'Дата поручения',
-        auto_now_add=True,
-        db_index=True
     )
     number = models.CharField(
         'Номер поручения',
         max_length=56,
         blank=True,
         null=True
+    )
+    assignment_date = models.DateField(
+        'Дата поручения',
+        auto_now_add=True,
+        db_index=True
     )
     description = models.TextField(
         'Описание',
