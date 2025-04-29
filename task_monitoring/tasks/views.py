@@ -4,9 +4,11 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.db.models import Sum
+from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404, render
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -25,11 +27,13 @@ from rest_framework import (
 
 from tasks.models import Group, Task, EXECUTION_STATUS
 
-from tasks.serializers import GroupSerializer, TaskSerializer, TaskGetSerializer
+from tasks.serializers import GroupSerializer, TaskCreateSerializer, TaskGetSerializer
 
 from tasks.filters import TaskFilterSet
 
 from tasks.permissions import IsAdminOrManagerOrReadOnly
+
+from users.models import ROLE_CHOICES
 
 
 User = get_user_model()
@@ -73,13 +77,25 @@ class TaskViewSet(viewsets.ModelViewSet):
     ).order_by(
         'execution_date'
     ).all()
-    serializer_class = TaskSerializer
+    serializer_class = TaskCreateSerializer
     permission_classes=(IsAdminOrManagerOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TaskFilterSet
     ordering_fields = ['execution_date',]
 
     def get_queryset(self):
+        if self.action in ['update', 'partial_update'] and not self.request.user.is_staff:
+            queryset = Task.objects.filter(
+                author=self.request.user.id,
+                execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
+            ).select_related(
+                'group'
+            ).prefetch_related(
+                'executors'
+            ).all()
+
+            return queryset
+
         if self.action in ['list', 'retrieve'] and not self.request.user.is_staff:
             if self.request.user.is_director():
                 authors_queryset = Task.objects.filter(
@@ -144,7 +160,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     @action(
         methods=['PATCH'],
         detail=False,
-        permission_classes=[permissions.IsAdminUser]
+        permission_classes=(permissions.IsAdminUser,)
     )
     def update_tasks(self, request):
         tasks = self.queryset.filter(
@@ -162,3 +178,38 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(tasks, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    @extend_schema(summary='Перенаправление поручения')
+    @action(
+        methods=['POST'],
+        detail=True,
+        permission_classes=(IsAdminOrManagerOrReadOnly,)
+    )
+    def redirect_task(self, request, pk):
+        current_task = get_object_or_404(
+            Task,
+            pk=pk,
+            executors__id=self.request.user.id,
+            execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
+        )
+
+        parent_task_data = model_to_dict(current_task)
+
+        parent_task_data.pop('id')
+        parent_task_data.pop('executors')
+
+        parent_task_data['author'] = request.user
+        parent_task_data['group'] = current_task.group
+        parent_task_data['parent_task'] = current_task
+
+        redirected_task = Task.objects.create(**parent_task_data)
+
+        new_executors = request.data.get('executors')
+        redirected_task.executors.set(new_executors)
+
+        redirected_task.save()
+
+        serializer = self.get_serializer(redirected_task)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

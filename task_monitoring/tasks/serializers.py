@@ -38,8 +38,8 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
         return User.objects.filter(department__in=subordinate_departments).all()
 
 
-class TaskSerializer(serializers.ModelSerializer):
-    """Сериализатор Задачи."""
+class TaskCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор Поручения."""
 
     author = CustomUserSerializer(
         default=serializers.CurrentUserDefault()
@@ -50,9 +50,11 @@ class TaskSerializer(serializers.ModelSerializer):
         model = Task
         fields = (
             'id',
-            'title',
-            'description',
             'group',
+            'title',
+            'number',
+            'parent_task',
+            'description',
             'author',
             'executors',
             'assignment_date',
@@ -72,7 +74,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
 
 class TaskGetSerializer(serializers.ModelSerializer):
-    """Контекстный сериализатор Задачи."""
+    """Контекстный сериализатор Поручения."""
 
     author = CustomUserContextSerializer(read_only=True)
     executors = CustomUserContextSerializer(
@@ -84,14 +86,18 @@ class TaskGetSerializer(serializers.ModelSerializer):
         model = Task
         fields = (
             'id',
-            'title',
-            'description',
             'group',
+            'title',
+            'number',
+            'parent_task',
+            'redirected_tasks',
+            'description',
             'author',
             'executors',
             'assignment_date',
             'execution_date'
         )
+        depth = 5
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

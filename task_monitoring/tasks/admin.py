@@ -18,12 +18,13 @@ class GroupAdmin(admin.ModelAdmin):
 class TaskAdmin(admin.ModelAdmin):
     list_display = (
         'id',
+        'group',
         'title',
-        'assignment_date',
         'number',
+        'parent_task',
         'description',
         'author',
-        'group',
+        'assignment_date',
         'execution_date',
         'execution_status',
         'tasks_file'

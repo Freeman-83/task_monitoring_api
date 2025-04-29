@@ -14,7 +14,7 @@ OVERDUE = 'overdue'
 EXECUTION_STATUS = (
     (COMPLETED, 'исполнено'),
     (ON_EXECUTION, 'на исполнении'),
-    (URGENT, 'urgent'),
+    (URGENT, 'срочное'),
     (OVERDUE, 'просрочено')
 )
 
@@ -72,12 +72,19 @@ class Task(models.Model):
         related_name='tasks_from',
         on_delete=models.CASCADE
     )
+    parent_task = models.ForeignKey(
+        'self',
+        verbose_name='Перенаправлено от',
+        related_name='redirected_tasks',
+        on_delete=models.PROTECT,
+        blank=True,
+        null=True
+    )
     executors = models.ManyToManyField(
         User,
         related_name='tasks',
         verbose_name='Исполнители'
     )
-    
     execution_date = models.DateField(
         'Дата исполнения',
         db_index=True
@@ -108,6 +115,7 @@ class Task(models.Model):
             models.UniqueConstraint(
                 fields=[
                     'title',
+                    'author',
                     'assignment_date',
                 ],
                 name='unique_task'
@@ -115,7 +123,7 @@ class Task(models.Model):
         ]
 
     def __str__(self):
-        return self.title
+        return f'{self.title} - {self.author}'
 
 
 

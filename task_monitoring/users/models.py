@@ -5,6 +5,21 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+DIRECTOR = 'Директор'
+DEPUTY_DIRECTOR = 'Заместитель директора'
+HEAD_DEPARTMENT = 'Начальник отдела'
+EMPLOYEE_DEPARTMENT = 'Сотрудник отдела'
+ADMIN = 'Администратор'
+
+ROLE_CHOICES = [
+    (DIRECTOR, 'Директор'),
+    (DEPUTY_DIRECTOR, 'Заместитель директора'),
+    (HEAD_DEPARTMENT, 'Начальник отдела'),
+    (EMPLOYEE_DEPARTMENT, 'Сотрудник отдела'),
+    (ADMIN, 'Администратор')
+]
+
+
 class CustomUserManager(UserManager):
     """Кастомный User Manager."""
     
@@ -63,20 +78,6 @@ class Department(models.Model):
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
-
-    DIRECTOR = 'Директор'
-    DEPUTY_DIRECTOR = 'Заместитель директора'
-    HEAD_DEPARTMENT = 'Начальник отдела'
-    EMPLOYEE_DEPARTMENT = 'Сотрудник отдела'
-    ADMIN = 'Администратор'
-
-    ROLE_CHOICES = [
-        (DIRECTOR, 'Директор'),
-        (DEPUTY_DIRECTOR, 'Заместитель директора'),
-        (HEAD_DEPARTMENT, 'Начальник отдела'),
-        (EMPLOYEE_DEPARTMENT, 'Сотрудник отдела'),
-        (ADMIN, 'Администратор')
-    ]
     
     username = None
     email = models.EmailField(
