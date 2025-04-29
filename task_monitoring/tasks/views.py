@@ -1,3 +1,4 @@
+from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -11,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from rest_framework import (
     filters,
@@ -21,7 +23,7 @@ from rest_framework import (
     viewsets
 )
 
-from tasks.models import Group, Task
+from tasks.models import Group, Task, EXECUTION_STATUS
 
 from tasks.serializers import GroupSerializer, TaskSerializer, TaskGetSerializer
 
@@ -131,22 +133,26 @@ class TaskViewSet(viewsets.ModelViewSet):
             return TaskGetSerializer
         return super().get_serializer_class()
 
-    # def create()
 
+    @extend_schema(summary='Актуализация статусов поручений')
+    @action(
+        methods=['PATCH'],
+        detail=False,
+        permission_classes=[permissions.IsAdminUser]
+    )
+    def update_tasks(self, request):
+        tasks = self.queryset.filter(
+            execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
+        )
+        for task in tasks:
+            if (date.today() < task.execution_date
+                and date.today() >= task.execution_date - settings.EXECUTION_REMINDER_PERIOD):
+                task.execution_status = EXECUTION_STATUS[2][0]
+            elif date.today() > task.execution_date:
+                task.execution_status = EXECUTION_STATUS[3][0]
 
-    # @extend_schema(summary='Удаление отчетов за определенный период')
-    # @action(
-    #     methods=['POST'],
-    #     detail=False,
-    #     permission_classes=[permissions.AllowAny]
-    # )
-    # def clear_report_period(self, request):
-    #     message, result = delete_report(request.data, self.queryset)
-    #     status_data = {
-    #         'not_found_error': status.HTTP_404_NOT_FOUND,
-    #         'report_period_error': status.HTTP_400_BAD_REQUEST,
-    #         'success_status': status.HTTP_204_NO_CONTENT
-    #     }
+            task.save()
 
-    #     return Response(data=message, status=status_data[result])
+        serializer = self.get_serializer(tasks, many=True)
 
+        return Response(serializer.data, status=status.HTTP_200_OK)

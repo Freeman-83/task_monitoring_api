@@ -47,6 +47,7 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+            'curator',
             'users'
         )
 
@@ -85,7 +86,6 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
             'first_name',
             'last_name',
             'email',
-            'chat_id',
             'department',
             'role'
         )

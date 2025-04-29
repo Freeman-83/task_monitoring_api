@@ -7,7 +7,8 @@ from .models import CustomUser, Department
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'name'
+        'name',
+        'curator'
     )
     list_display_links = ('name',)
     search_fields = ('name',)

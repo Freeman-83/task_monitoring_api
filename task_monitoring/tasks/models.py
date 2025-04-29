@@ -1,8 +1,22 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.core.validators import FileExtensionValidator
 
 
 User = get_user_model()
+
+
+COMPLETED = 'completed'
+ON_EXECUTION = 'on_execution'
+URGENT = 'urgent'
+OVERDUE = 'overdue'
+
+EXECUTION_STATUS = (
+    (COMPLETED, 'исполнено'),
+    (ON_EXECUTION, 'на исполнении'),
+    (URGENT, 'urgent'),
+    (OVERDUE, 'просрочено')
+)
 
 
 class Group(models.Model):
@@ -25,19 +39,20 @@ class Group(models.Model):
 class Task(models.Model):
     """Модель Задачи."""
 
-    COMPLETED = 'completed'
-    ON_EXECUTION = 'on_execution'
-    OVERDUE = 'overdue'
-
-    EXECUTION_STATUS = (
-        (COMPLETED, 'исполнено'),
-        (ON_EXECUTION, 'на исполнении'),
-        (OVERDUE, 'просрочено')
-    )
-
     title = models.CharField(
         'Заголовок',
         max_length=512
+    )
+    assignment_date = models.DateField(
+        'Дата поручения',
+        auto_now_add=True,
+        db_index=True
+    )
+    number = models.CharField(
+        'Номер поручения',
+        max_length=56,
+        blank=True,
+        null=True
     )
     description = models.TextField(
         'Описание',
@@ -62,11 +77,7 @@ class Task(models.Model):
         related_name='tasks',
         verbose_name='Исполнители'
     )
-    assignment_date = models.DateField(
-        'Дата поручения',
-        auto_now_add=True,
-        db_index=True
-    )
+    
     execution_date = models.DateField(
         'Дата исполнения',
         db_index=True
@@ -76,11 +87,23 @@ class Task(models.Model):
         choices=EXECUTION_STATUS,
         default=ON_EXECUTION
     )
+    tasks_file = models.FileField(
+        'Приложение',
+        upload_to='uploaded/tasks_files/',
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['doc', 'docx', 'pdf', 'jpg', 'jpeg', 'png']
+            )
+        ],
+        help_text='Разрешенные расширения: doc, docx, pdf, jpg, jpeg, png.',
+        blank=True,
+        null=True
+    )
 
     class Meta:
-        ordering = ['assignment_date']
-        verbose_name = 'Задача'
-        verbose_name_plural = 'Задачи'
+        ordering = ['execution_date']
+        verbose_name = 'Поручение'
+        verbose_name_plural = 'Поручения'
         constraints = [
             models.UniqueConstraint(
                 fields=[

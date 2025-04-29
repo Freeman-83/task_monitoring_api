@@ -46,6 +46,7 @@ class Department(models.Model):
     curator = models.ForeignKey(
         'CustomUser',
         related_name='subordinate_departments',
+        verbose_name='Курирующий заместитель',
         on_delete=models.SET_NULL,
         blank=True,
         null=True

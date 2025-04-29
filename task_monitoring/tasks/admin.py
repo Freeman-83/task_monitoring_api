@@ -19,18 +19,21 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = (
         'id',
         'title',
+        'assignment_date',
+        'number',
         'description',
         'author',
         'group',
-        'assignment_date',
         'execution_date',
-        'execution_status'
+        'execution_status',
+        'tasks_file'
     )
     search_fields = (
         'title',
+        'assignment_date',
+        'number',
         'author',
         'group',
-        'assignment_date',
         'execution_date',
     )
     list_filter = (

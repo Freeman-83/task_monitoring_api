@@ -25,17 +25,26 @@ class GroupSerializer(serializers.ModelSerializer):
         )
 
 
+class ExecutorsField(serializers.PrimaryKeyRelatedField):
+    """Кастомное поле выбора исполнителя Задачи."""
+
+    def get_queryset(self):
+        request_user = self.context['request'].user
+        subordinate_departments = request_user.subordinate_departments.all()
+        if request_user.is_staff or request_user.is_director():
+            return User.objects.all()
+        elif request_user.is_head_department():
+            return User.objects.filter(department=request_user.department).all()
+        return User.objects.filter(department__in=subordinate_departments).all()
+
+
 class TaskSerializer(serializers.ModelSerializer):
     """Сериализатор Задачи."""
 
     author = CustomUserSerializer(
         default=serializers.CurrentUserDefault()
     )
-    
-    executors = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        many=True
-    )
+    executors = ExecutorsField(many=True)
 
     class Meta:
         model = Task
@@ -60,7 +69,7 @@ class TaskSerializer(serializers.ModelSerializer):
             ]
         )
     ]
-    
+
 
 class TaskGetSerializer(serializers.ModelSerializer):
     """Контекстный сериализатор Задачи."""
