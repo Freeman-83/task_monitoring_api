@@ -95,7 +95,8 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'author',
             'executors',
             'assignment_date',
-            'execution_date'
+            'execution_date',
+            'execution_status'
         )
 
     def to_representation(self, instance):
