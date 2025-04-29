@@ -20,9 +20,9 @@ User = get_user_model()
 
 @extend_schema(tags=['Пользователи'])
 @extend_schema_view(
-    list=extend_schema(summary='Получение списка пользователей'),
+    list=extend_schema(summary='Список пользователей'),
     create=extend_schema(summary='Создание нового пользователя'),
-    retrieve=extend_schema(summary='Получение данных пользователя'),
+    retrieve=extend_schema(summary='Данные пользователя'),
     update=extend_schema(summary='Изменение данных пользователя'),
     partial_update=extend_schema(summary='Частичное изменение данных данных пользователя'),
     destroy=extend_schema(summary='Удаление данных пользователя'),

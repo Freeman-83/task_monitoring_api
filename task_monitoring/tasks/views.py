@@ -37,12 +37,15 @@ User = get_user_model()
 
 @extend_schema(tags=['Тип задач'])
 @extend_schema_view(
-    list=extend_schema(summary='Получение списка типов задач'),
-    create=extend_schema(summary='Создание нового типа задач'),
-    retrieve=extend_schema(summary='Получение типа задачи')
+    list=extend_schema(summary='Список типов поручений'),
+    create=extend_schema(summary='Создание нового типа поручения'),
+    retrieve=extend_schema(summary='Тип поручения'),
+    update=extend_schema(summary='Изменение типа поручения'),
+    partial_update=extend_schema(summary='Частичное изменение типа поручения'),
+    destroy=extend_schema(summary='Удаление типа поручения'),
 )
 class GroupViewSet(viewsets.ModelViewSet):
-    """Вьюсет Типа задач."""
+    """Вьюсет Типа поручения."""
 
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -53,12 +56,15 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 @extend_schema(tags=['Общий отчет по предобработке'])
 @extend_schema_view(
-    list=extend_schema(summary='Получение всех задач'),
-    create=extend_schema(summary='Создание задачи'),
-    retrieve=extend_schema(summary='Получение задачи'),
+    list=extend_schema(summary='Список поручений'),
+    create=extend_schema(summary='Создание нового поручения'),
+    retrieve=extend_schema(summary='Поручение'),
+    update=extend_schema(summary='Изменение поручения'),
+    partial_update=extend_schema(summary='Частичное изменение поручения'),
+    destroy=extend_schema(summary='Удаление поручения'),
 )
 class TaskViewSet(viewsets.ModelViewSet):
-    """Вьюсет Задачи."""
+    """Вьюсет Поручения."""
 
     queryset = Task.objects.select_related(
         'group'
