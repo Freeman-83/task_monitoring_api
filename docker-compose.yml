@@ -1,13 +1,13 @@
 services:
     db:
-        image: postgres:16.2
-        env_file: .env
+        image: postgres:17.4
+        env_file: task_monitoring/.env
         volumes:
             - db_volume:/var/lib/postgresql/data
 
     backend:
         build: ./task_monitoring
-        env_file: .env
+        env_file: task_monitoring/.env
         volumes:
             - static_volume:/app/collected_static
             - media_volume:/app/media
