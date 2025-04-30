@@ -8,6 +8,8 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from tasks.models import Task, Group
+
+from users.models import ROLE_CHOICES
 from users.serializers import CustomUserSerializer, CustomUserContextSerializer
 
 
@@ -21,21 +23,27 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = (
             'id',
-            'name'
+            'name',
+            'tasks'
         )
 
 
 class ExecutorsField(serializers.PrimaryKeyRelatedField):
-    """Кастомное поле выбора исполнителя Задачи."""
+    """Кастомное поле выбора исполнителя Поручения."""
 
     def get_queryset(self):
         request_user = self.context['request'].user
         subordinate_departments = request_user.subordinate_departments.all()
-        if request_user.is_staff or request_user.is_director():
-            return User.objects.all()
+        if request_user.is_deputy_director():
+            return User.objects.exclude(role=ROLE_CHOICES[0][0])
         elif request_user.is_head_department():
-            return User.objects.filter(department=request_user.department).all()
-        return User.objects.filter(department__in=subordinate_departments).all()
+            return User.objects.filter(department=request_user.department)
+        elif request_user.is_deputy_head_department():
+            return User.objects.filter(
+                department=request_user.department,
+                role=ROLE_CHOICES[0][4]
+            )
+        return User.objects.all()
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):

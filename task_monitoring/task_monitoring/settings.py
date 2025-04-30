@@ -140,13 +140,14 @@ DJOSER = {
     'SERIALIZERS': {
         'user_create': 'users.serializers.RegisterUserSerializer',
         'current_user': 'users.serializers.CustomUserSerializer',
-        'user': 'users.serializers.CustomUserContextSerializer'
+        'user': 'users.serializers.CustomUserSerializer',
+        'user_list': 'users.serializers.CustomUserSerializer'
     },
-    # 'PERMISSIONS': {
-    #     'user_create': ['rest_framework.permissions.IsAdminUser'],
-    #     'user': ['users.permissions.CustomUserPermission'],
-    #     'user_list': ['users.permissions.CustomUserPermission']
-    # }
+    'PERMISSIONS': {
+        'user_create': ['rest_framework.permissions.IsAdminUser'],
+        # 'user': ['users.permissions.CustomUserPermission'],
+        # 'user_list': ['users.permissions.CustomUserPermission']
+    }
 }
 
 SIMPLE_JWT = {

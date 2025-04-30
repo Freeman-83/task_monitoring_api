@@ -49,15 +49,6 @@ class Task(models.Model):
         blank=True,
         null=True
     )
-    assignment_date = models.DateField(
-        'Дата поручения',
-        auto_now_add=True,
-        db_index=True
-    )
-    description = models.TextField(
-        'Описание',
-        max_length=10000
-    )
     group = models.ForeignKey(
         Group,
         verbose_name='Тип поручения',
@@ -71,6 +62,15 @@ class Task(models.Model):
         verbose_name='Инициатор',
         related_name='tasks_from',
         on_delete=models.CASCADE
+    )
+    assignment_date = models.DateField(
+        'Дата поручения',
+        auto_now_add=True,
+        db_index=True
+    )
+    description = models.TextField(
+        'Описание',
+        max_length=10000
     )
     parent_task = models.ForeignKey(
         'self',

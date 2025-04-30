@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 DIRECTOR = 'Директор'
 DEPUTY_DIRECTOR = 'Заместитель директора'
 HEAD_DEPARTMENT = 'Начальник отдела'
+DEPUTY_HEAD_DEPARTMENT = 'Заместитель начальника отдела'
 EMPLOYEE_DEPARTMENT = 'Сотрудник отдела'
 ADMIN = 'Администратор'
 
@@ -15,6 +16,7 @@ ROLE_CHOICES = [
     (DIRECTOR, 'Директор'),
     (DEPUTY_DIRECTOR, 'Заместитель директора'),
     (HEAD_DEPARTMENT, 'Начальник отдела'),
+    (DEPUTY_HEAD_DEPARTMENT, 'Заместитель начальника отдела'),
     (EMPLOYEE_DEPARTMENT, 'Сотрудник отдела'),
     (ADMIN, 'Администратор')
 ]
@@ -141,6 +143,9 @@ class CustomUser(AbstractUser):
     
     def is_head_department(self):
         return self.role == 'Начальник отдела'
+
+    def is_deputy_head_department(self):
+        return self.role == 'Заместитель начальника отдела'
     
     def is_employee(self):
         return self.role == 'Сотрудник отдела'

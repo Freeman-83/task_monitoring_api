@@ -39,19 +39,6 @@ class RegisterUserSerializer(UserCreateSerializer):
         return value
 
 
-class DepartmentSerializer(serializers.ModelSerializer):
-    """Кастомный сериализатор Подразделения."""
-
-    class Meta:
-        model = Department
-        fields = (
-            'id',
-            'name',
-            'curator',
-            'users'
-        )
-
-
 class CustomUserSerializer(UserSerializer):
     """Кастомный сериализатор Пользователя."""
 
@@ -113,3 +100,16 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
         if data['department']:
             data['department'] = instance.department.name
         return data
+
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    """Кастомный сериализатор Подразделения."""
+
+    class Meta:
+        model = Department
+        fields = (
+            'id',
+            'name',
+            'curator',
+            'users'
+        )
