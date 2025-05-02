@@ -4,7 +4,6 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
 
 from tasks.models import Task, Group
@@ -80,6 +79,13 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         )
     ]
 
+    def validate(self, data):
+        if any([data['assignment_date'] > date.today(),
+                data['assignment_date'] > data['execution_date'],
+                data['execution_date'] < date.today()]):
+            raise serializers.ValidationError('Некорректные даты регистрации и/или исполнения поручения!')
+        return value
+
 
 class TaskGetSerializer(serializers.ModelSerializer):
     """Контекстный сериализатор Поручения."""
@@ -104,7 +110,7 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'executors',
             'assignment_date',
             'execution_date',
-            'execution_status'
+            'is_completed'
         )
 
     def to_representation(self, instance):

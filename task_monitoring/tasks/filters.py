@@ -30,5 +30,5 @@ class TaskFilterSet(FilterSet):
         fields = (
             'group',
             'executors',
-            'execution_status'
+            'is_completed'
         )

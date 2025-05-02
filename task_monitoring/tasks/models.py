@@ -6,19 +6,6 @@ from django.core.validators import FileExtensionValidator
 User = get_user_model()
 
 
-COMPLETED = 'completed'
-ON_EXECUTION = 'on_execution'
-URGENT = 'urgent'
-OVERDUE = 'overdue'
-
-EXECUTION_STATUS = (
-    (COMPLETED, 'исполнено'),
-    (ON_EXECUTION, 'на исполнении'),
-    (URGENT, 'срочное'),
-    (OVERDUE, 'просрочено')
-)
-
-
 class Group(models.Model):
     """Модель типа задачи."""
 
@@ -89,10 +76,9 @@ class Task(models.Model):
         'Дата исполнения',
         db_index=True
     )
-    execution_status = models.CharField(
+    is_completed = models.BooleanField(
         'Статус исполнения',
-        choices=EXECUTION_STATUS,
-        default=ON_EXECUTION
+        default=False
     )
     tasks_file = models.FileField(
         'Приложение',
@@ -123,7 +109,7 @@ class Task(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.title} - {self.author}'
+        return f'{self.author}'
 
 
 

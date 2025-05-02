@@ -25,7 +25,7 @@ from rest_framework import (
     viewsets
 )
 
-from tasks.models import Group, Task, EXECUTION_STATUS
+from tasks.models import Group, Task
 
 from tasks.serializers import GroupSerializer, TaskCreateSerializer, TaskGetSerializer
 
@@ -87,7 +87,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         if self.action in ['update', 'partial_update'] and not self.request.user.is_staff:
             queryset = Task.objects.filter(
                 author=self.request.user.id,
-                execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
+                is_completed=False,
+                execution_date__gt=date.today()
             ).select_related(
                 'group'
             ).prefetch_related(
@@ -156,28 +157,28 @@ class TaskViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
 
 
-    @extend_schema(summary='Актуализация статусов поручений')
-    @action(
-        methods=['PATCH'],
-        detail=False,
-        permission_classes=(permissions.IsAdminUser,)
-    )
-    def update_tasks(self, request):
-        tasks = self.queryset.filter(
-            execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
-        )
-        for task in tasks:
-            if (date.today() < task.execution_date
-                and date.today() >= task.execution_date - settings.EXECUTION_REMINDER_PERIOD):
-                task.execution_status = EXECUTION_STATUS[2][0]
-            elif date.today() > task.execution_date:
-                task.execution_status = EXECUTION_STATUS[3][0]
+    # @extend_schema(summary='Актуализация статусов поручений')
+    # @action(
+    #     methods=['PATCH'],
+    #     detail=False,
+    #     permission_classes=(permissions.IsAdminUser,)
+    # )
+    # def update_tasks(self, request):
+    #     tasks = self.queryset.filter(
+    #         execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
+    #     )
+    #     for task in tasks:
+    #         if (date.today() < task.execution_date
+    #             and date.today() >= task.execution_date - settings.EXECUTION_REMINDER_PERIOD):
+    #             task.execution_status = EXECUTION_STATUS[2][0]
+    #         elif date.today() > task.execution_date:
+    #             task.execution_status = EXECUTION_STATUS[3][0]
 
-            task.save()
+    #         task.save()
 
-        serializer = self.get_serializer(tasks, many=True)
+    #     serializer = self.get_serializer(tasks, many=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    #     return Response(serializer.data, status=status.HTTP_200_OK)
     
 
     @extend_schema(summary='Перенаправление поручения')
@@ -191,7 +192,8 @@ class TaskViewSet(viewsets.ModelViewSet):
             Task,
             pk=pk,
             executors__id=self.request.user.id,
-            execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
+            is_completed=False,
+            execution_date__gt=date.today() + settings.EXECUTION_REMINDER_PERIOD
         )
 
         parent_task_data = model_to_dict(current_task)
