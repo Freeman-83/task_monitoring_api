@@ -81,7 +81,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes=(IsAdminOrManagerOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TaskFilterSet
-    ordering_fields = ['execution_date',]
+    ordering_fields = ('execution_date',)
 
     def get_queryset(self):
         if self.action in ['update', 'partial_update'] and not self.request.user.is_staff:
