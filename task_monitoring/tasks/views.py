@@ -155,30 +155,6 @@ class TaskViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TaskGetSerializer
         return super().get_serializer_class()
-
-
-    # @extend_schema(summary='Актуализация статусов поручений')
-    # @action(
-    #     methods=['PATCH'],
-    #     detail=False,
-    #     permission_classes=(permissions.IsAdminUser,)
-    # )
-    # def update_tasks(self, request):
-    #     tasks = self.queryset.filter(
-    #         execution_status__in=[EXECUTION_STATUS[1][0], EXECUTION_STATUS[2][0]]
-    #     )
-    #     for task in tasks:
-    #         if (date.today() < task.execution_date
-    #             and date.today() >= task.execution_date - settings.EXECUTION_REMINDER_PERIOD):
-    #             task.execution_status = EXECUTION_STATUS[2][0]
-    #         elif date.today() > task.execution_date:
-    #             task.execution_status = EXECUTION_STATUS[3][0]
-
-    #         task.save()
-
-    #     serializer = self.get_serializer(tasks, many=True)
-
-    #     return Response(serializer.data, status=status.HTTP_200_OK)
     
 
     @extend_schema(summary='Перенаправление поручения')

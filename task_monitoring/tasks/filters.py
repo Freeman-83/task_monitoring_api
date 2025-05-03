@@ -18,13 +18,6 @@ from tasks.models import Task
 
 User = get_user_model()
 
-CHOICES = [
-    ('on_execution', 'on_execution'),
-    ('urgent', 'urgent'), 
-    ('overdue', 'overdue'), 
-    ('completed', 'overdue')
-]
-
 
 class TaskFilterSet(FilterSet):
 
@@ -34,14 +27,11 @@ class TaskFilterSet(FilterSet):
         to_field_name='id',
         queryset=User.objects.all()
     )
-    
     is_urgent = BooleanFilter(
-        field_name='is_urgent',
-        method='get_execution_status'
+        method='get_is_urgent'
     )
     is_overdue = BooleanFilter(
-        field_name='is_overdue',
-        method='get_execution_status'
+        method='get_is_overdue'
     )
 
     class Meta:
@@ -52,16 +42,15 @@ class TaskFilterSet(FilterSet):
             'is_completed'
         )
 
-    def get_execution_status(self, queryset, name, value):
-        if name == 'is_urgent' and value:
-            return queryset.filter(
-                is_completed=False,
-                execution_date__gte=date.today(),
-                execution_date__lte=date.today() + settings.EXECUTION_REMINDER_PERIOD,
-            )
-        if name == 'is_overdue' and value:
-            return queryset.filter(
-                is_completed=False,
-                execution_date__lt=date.today()
-            )
-        return queryset.all()
+    def get_is_urgent(self, queryset, name, value):
+        return queryset.filter(
+            is_completed=False,
+            execution_date__gte=date.today(),
+            execution_date__lte=date.today() + settings.EXECUTION_REMINDER_PERIOD,
+        )
+
+    def get_is_overdue(self, queryset, name, value):
+        return queryset.filter(
+            is_completed=False,
+            execution_date__lt=date.today()
+        )

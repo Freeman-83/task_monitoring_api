@@ -79,19 +79,7 @@ class TaskAdmin(admin.ModelAdmin):
         'group',
         'assignment_date',
         'execution_date',
-        # 'is_completed',
         StatusListFilter,
     )
     list_display_links = ('title',)
     empty_value_display = '---'
-
-    # @admin.display(description='Срочное', empty_value='')
-    # def is_urgent_task(self, task):
-    #     if not task.is_completed:
-    #         return all([date.today() < task.execution_date,
-    #             date.today() >= task.execution_date - settings.EXECUTION_REMINDER_PERIOD])
-
-    # @admin.display(description='Просроченное', empty_value='')
-    # def is_overdue_task(self, task):
-    #     if not task.is_completed and date.today() > task.execution_date:
-    #         return '!!!'
