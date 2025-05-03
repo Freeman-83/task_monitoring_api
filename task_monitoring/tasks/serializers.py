@@ -1,5 +1,6 @@
 from datetime import timedelta, date, datetime
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
@@ -95,6 +96,8 @@ class TaskGetSerializer(serializers.ModelSerializer):
         read_only=True,
         many=True,
     )
+    is_urgent = serializers.SerializerMethodField()
+    is_overdue = serializers.SerializerMethodField()
 
     class Meta:
         model = Task
@@ -110,10 +113,21 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'executors',
             'assignment_date',
             'execution_date',
-            'is_completed'
+            'is_completed',
+            'is_urgent',
+            'is_overdue'
         )
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['group'] = instance.group.name
         return data
+
+    def get_is_urgent(self, task):
+        return all([task.is_completed==False,
+                    task.execution_date >= date.today(),
+                    task.execution_date <= date.today() + settings.EXECUTION_REMINDER_PERIOD])
+    
+    def get_is_overdue(self, task):
+        return all([task.is_completed==False,
+                    task.execution_date < date.today()])

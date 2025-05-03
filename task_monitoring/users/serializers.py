@@ -75,7 +75,7 @@ class CustomUserSerializer(UserSerializer):
                     'author': f'{task.author.last_name} {task.author.first_name}',
                     'assignment_date': task.assignment_date,
                     'execution_date': task.execution_date,
-                    'is_completed': task.execution_status
+                    'is_completed': task.is_completed
                 }
             )
 
@@ -92,7 +92,8 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
             'last_name',
             'email',
             'department',
-            'role'
+            'role',
+            'chat_id'
         )
     
     def to_representation(self, instance):

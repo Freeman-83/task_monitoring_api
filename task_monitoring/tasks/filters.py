@@ -36,9 +36,11 @@ class TaskFilterSet(FilterSet):
     )
     
     is_urgent = BooleanFilter(
+        field_name='is_urgent',
         method='get_execution_status'
     )
     is_overdue = BooleanFilter(
+        field_name='is_overdue',
         method='get_execution_status'
     )
 
