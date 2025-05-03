@@ -1,3 +1,6 @@
+from datetime import date
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from django_filters.rest_framework import (
@@ -7,12 +10,20 @@ from django_filters.rest_framework import (
     ModelMultipleChoiceFilter,
     MultipleChoiceFilter,
     AllValuesMultipleFilter,
+    ChoiceFilter
 )
 
 from tasks.models import Task
 
 
 User = get_user_model()
+
+CHOICES = [
+    ('on_execution', 'on_execution'),
+    ('urgent', 'urgent'), 
+    ('overdue', 'overdue'), 
+    ('completed', 'overdue')
+]
 
 
 class TaskFilterSet(FilterSet):
@@ -23,7 +34,13 @@ class TaskFilterSet(FilterSet):
         to_field_name='id',
         queryset=User.objects.all()
     )
-    # execution_status = AllValuesMultipleFilter(field_name='execution_status')
+    
+    is_urgent = BooleanFilter(
+        method='get_execution_status'
+    )
+    is_overdue = BooleanFilter(
+        method='get_execution_status'
+    )
 
     class Meta:
         model = Task
@@ -32,3 +49,17 @@ class TaskFilterSet(FilterSet):
             'executors',
             'is_completed'
         )
+
+    def get_execution_status(self, queryset, name, value):
+        if name == 'is_urgent' and value:
+            return queryset.filter(
+                is_completed=False,
+                execution_date__gte=date.today(),
+                execution_date__lte=date.today() + settings.EXECUTION_REMINDER_PERIOD,
+            )
+        if name == 'is_overdue' and value:
+            return queryset.filter(
+                is_completed=False,
+                execution_date__lt=date.today()
+            )
+        return queryset.all()

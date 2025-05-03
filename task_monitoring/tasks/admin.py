@@ -10,36 +10,33 @@ class StatusListFilter(admin.SimpleListFilter):
     """Кастомный фильтр для статуса исполнения поручения."""
     
     title = 'Статус исполнения'
-    parameter_name = 'status'
+    parameter_name = 'execution_status'
 
     def lookups(self, request, model_admin):
-
         return [
             ('on_execution', 'На исполнении'),
-            ('is_urgent_task', 'Срочные'),
-            ('is_overdue_task', 'Просроченные'),
+            ('urgent', 'Срочные'),
+            ('overdue', 'Просроченные'),
             ('completed', 'Исполненные')
         ]
 
     def queryset(self, request, queryset):
-
         if self.value() == 'on_execution':
+            return queryset.filter(is_completed=False)
+        if self.value() == 'completed':
+            return queryset.filter(is_completed=True)
+        if self.value() == 'urgent':
             return queryset.filter(
                 is_completed=False,
-            )
-        if self.value() == 'is_urgent_task':
-            return queryset.filter(
                 execution_date__gte=date.today(),
                 execution_date__lte=date.today() + settings.EXECUTION_REMINDER_PERIOD,
             )
-        if self.value() == 'is_overdue_task':
+        if self.value() == 'overdue':
             return queryset.filter(
-                execution_date__lt=date.today(),
+                is_completed=False,
+                execution_date__lt=date.today()
             )
-        if self.value() == 'completed':
-            return queryset.filter(
-                is_completed=True,
-            )
+        
 
 
 @admin.register(Group)
