@@ -22,7 +22,6 @@ class CustomUserAdmin(admin.ModelAdmin):
         'email',
         'first_name',
         'last_name',
-        'chat_id',
         'department',
         'role'
     )

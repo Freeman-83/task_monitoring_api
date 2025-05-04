@@ -95,12 +95,6 @@ class CustomUser(AbstractUser):
         'Фамилия',
         max_length=150
     )
-    chat_id = models.CharField(
-        'id чата пользователя',
-        max_length=100,
-        null=True,
-        blank=True
-    )
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,

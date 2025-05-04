@@ -51,7 +51,6 @@ class CustomUserSerializer(UserSerializer):
             'email',
             'first_name',
             'last_name',
-            'chat_id',
             'department',
             'role',
             'tasks_count',
@@ -88,12 +87,12 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
+            'id',
             'first_name',
             'last_name',
             'email',
             'department',
-            'role',
-            'chat_id'
+            'role'
         )
     
     def to_representation(self, instance):
