@@ -81,11 +81,9 @@ class TaskCreateSerializer(serializers.ModelSerializer):
     ]
 
     def validate(self, data):
-        if any([data['assignment_date'] > date.today(),
-                data['assignment_date'] > data['execution_date'],
-                data['execution_date'] < date.today()]):
-            raise serializers.ValidationError('Некорректные даты регистрации и/или исполнения поручения!')
-        return value
+        if data['execution_date'] < date.today():
+            raise serializers.ValidationError('Некорректная дата исполнения поручения!')
+        return data
 
 
 class TaskGetSerializer(serializers.ModelSerializer):

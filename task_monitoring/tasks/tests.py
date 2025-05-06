@@ -1,6 +1,7 @@
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
+from django.forms.models import model_to_dict
 from django.urls import reverse
 
 from rest_framework.test import APIClient, APITestCase
@@ -20,124 +21,152 @@ class TaskTests(APITestCase):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.department = Department.objects.create(
-            name='test department'
+        admin_token = 'admin_token'
+        director_token = 'director_token'
+        deputy_director_token = 'deputy_director_token'
+        head_department_token = 'head_department_token'
+        deputy_head_department_token = 'deputy_head_department_token'
+        employee_token = 'employee_token'
+
+        cls.admin = User.objects.create(
+            email='admin@mail.ru',
+            first_name='Admin',
+            last_name='Adminov',
+            role=ROLE_CHOICES[5][0],
+            is_staff=True
         )
-
-        cls.guest_client = APIClient()
-
-        cls.author = User.objects.create(
-            email='author@mail.ru',
+        cls.director = User.objects.create(
+            email='director@mail.ru',
             first_name='Ivan',
             last_name='Ivanov',
-            role=ROLE_CHOICES[1][0]
+            role=ROLE_CHOICES[0][0]
         )
-        cls.department.curator = cls.author
-
-        cls.executor = User.objects.create(
-            email='executor1@mail.ru',
+        cls.deputy_director = User.objects.create(
+            email='deputy_director@mail.ru',
             first_name='Petr',
             last_name='Petrov',
-            department=cls.department,
-            role=ROLE_CHOICES[2][0]
+            role=ROLE_CHOICES[1][0]
         )
-        cls.not_executor = User.objects.create(
-            email='executor2@mail.ru',
+        cls.head_department = User.objects.create(
+            email='head_department@mail.ru',
             first_name='Sidor',
             last_name='Sidorov',
-            department=cls.department,
+            role=ROLE_CHOICES[2][0]
+        )
+        cls.deputy_head_department = User.objects.create(
+            email='deputy_head_department@mail.ru',
+            first_name='Gleb',
+            last_name='Glebov',
             role=ROLE_CHOICES[3][0]
         )
+        cls.employee = User.objects.create(
+            email='employee@mail.ru',
+            first_name='Boris',
+            last_name='Borisov',
+            role=ROLE_CHOICES[4][0]
+        )
 
-        cls.auth_author = APIClient()
-        cls.auth_author.force_login(cls.author)
+        cls.department_1 = Department.objects.create(
+            name='test department_1'
+        )
+        cls.department_2 = Department.objects.create(
+            name='test department_2'
+        )
+        cls.department_1.curator = cls.director
+        cls.department_2.curator = cls.deputy_director
 
-        cls.auth_executor = APIClient()
-        cls.auth_not_executor = APIClient()
-        cls.auth_executor.force_login(cls.executor)
-        cls.auth_not_executor.force_login(cls.not_executor)
+        cls.guest_client = APIClient()
+        cls.auth_admin = APIClient()
+        cls.auth_director = APIClient()
+        cls.auth_deputy_director = APIClient()
+        cls.auth_head_department = APIClient()
+        cls.auth_deputy_head_department = APIClient()
+        cls.auth_employee = APIClient()
+
+        cls.auth_admin.force_authenticate(
+            cls.admin, token=admin_token
+        )
+        cls.auth_director.force_authenticate(
+            cls.director, token=director_token
+        )
+        cls.auth_deputy_director.force_authenticate(
+            cls.deputy_director, token=deputy_director_token
+        )
+        cls.auth_head_department.force_authenticate(
+            cls.head_department, token=head_department_token
+        )
+        cls.auth_deputy_head_department.force_authenticate(
+            cls.deputy_head_department, token=deputy_head_department_token
+        )
+        cls.auth_employee.force_authenticate(
+            cls.employee, token=employee_token
+        )
 
 
     def setUp(self):
         self.group = Group.objects.create(
             name='test_group'
         )
-        self.task_data = {
-            'title': 'test task',
+        task_data = {
+            'title': 'test task 1',
             'number': '1',
-            'author': TaskTests.author,
+            'author': TaskTests.director,
             'group': self.group,
-            'assignment_date': date.today(),
             'execution_date': date.today() + timedelta(days=4),
             'description': 'test description 1'
         }
-        executor
-        self.task = Task.objects.create(**self.task_data)
-        self.task.executors.set([TaskTests.executor,])
+        self.task = Task.objects.create(**task_data)
+        self.task.executors.set(
+            [TaskTests.deputy_director, TaskTests.head_department]
+        )
 
-
-    # def test_get_books(self):
-    #     url = reverse('tasks')
-    #     response = self.client.get(url)
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(len(response.data), 1)
 
     def test_get_groups(self):
-        ...
+        """Проверка доступности url групп для Админа."""
+
+        url = '/api/groups/'
+        response = TaskTests.auth_admin.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
     def test_get_tasks(self):
-        ...
+        """Проверка доступности url поручений для разных пользователей."""
+
+        url = '/api/tasks/'
+        director_response = TaskTests.auth_director.get(url)
+        deputy_director_response = TaskTests.auth_director.get(url)
+        head_department_response = TaskTests.auth_head_department.get(url)
+
+        self.assertEqual(
+            director_response.status_code, status.HTTP_200_OK
+        )
+        self.assertEqual(
+            deputy_director_response.status_code, status.HTTP_200_OK
+        )
+        self.assertEqual(
+            head_department_response.status_code, status.HTTP_200_OK
+        )
+
 
     def test_create_task(self):
-        ...
+        url = '/api/tasks/'
+        task_data = {
+            'title': 'test task 2',
+            'number': '2',
+            'group': self.group.id,
+            'execution_date': date.today() + timedelta(days=10),
+            'description': 'test description 2',
+            'executors': [TaskTests.deputy_director.id, TaskTests.head_department.id]
+        }
+        response = TaskTests.auth_director.post(url, task_data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 
     def test_redirect_task(self):
-        ...
+        url = f'/api/tasks/{self.task.id}/redirect_task/'
 
+        response = TaskTests.auth_deputy_director.post(
+            url, data={'executors': [TaskTests.deputy_head_department.id]}
+        )
 
-
-
-    def test_url_address_available(self):
-        """Проверка доступности URL-адресов для разных пользователей."""
-        users_urls_status = {
-            TaskTests.guest_client:
-            (   
-                [f'/api/group/', status.HTTP_401_UNAUTHORIZED],
-                [f'/api/tasks/', status.HTTP_401_UNAUTHORIZED],
-                [f'/api/group/{self.group.id}/', status.HTTP_401_UNAUTHORIZED],
-                [f'/api/tasks/{self.task.id}/', status.HTTP_401_UNAUTHORIZED],
-                [f'/api/tasks/redirect_task/{TaskTests.not_executor}/', status.HTTP_401_UNAUTHORIZED]
-            ),
-            TaskTests.author:
-            (
-                ['/', HTTPStatus.OK],
-                [f'/api/group/{self.group.id}/', status.HTTP_200_OK],
-                [f'/api/tasks/{self.task.id}/', status.HTTP_200_OK],
-                [f'/api/tasks/redirect_task/{TaskTests.not_executor}/', status.HTTP_302_FOUND]
-            ),
-            TaskTests.executor_1:
-            (
-                ['/', HTTPStatus.OK],
-                [f'/api/group/{self.group.id}/', status.HTTP_200_OK],
-                [f'/api/tasks/{self.task.id}/', status.HTTP_200_OK],
-                [f'/api/tasks/redirect_task/{TaskTests.not_executor}/', status.HTTP_302_FOUND]
-            ),
-            TaskTests.executor_2:
-            (
-                ['/', HTTPStatus.OK],
-                [f'/api/group/{self.group.id}/', status.HTTP_200_OK],
-                [f'/api/tasks/{self.task.id}/', status.HTTP_200_OK],
-                [f'/api/tasks/redirect_task/{TaskTests.not_executor}/', status.HTTP_302_FOUND]
-            )
-        }
-
-        for client, url_response in users_urls_status.items():
-            for url, response_status in url_response:
-                with self.subTest(url=url):
-                    response = client.get(url)
-                    self.assertEqual(
-                        response.status_code,
-                        response_status,
-                        (f'Статус запроса страницы {url}'
-                         ' не соответствует ожидаемому')
-                    )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
