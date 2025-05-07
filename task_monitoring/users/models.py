@@ -9,7 +9,7 @@ DIRECTOR = 'Директор'
 DEPUTY_DIRECTOR = 'Заместитель директора'
 HEAD_DEPARTMENT = 'Начальник отдела'
 DEPUTY_HEAD_DEPARTMENT = 'Заместитель начальника отдела'
-EMPLOYEE_DEPARTMENT = 'Сотрудник отдела'
+EMPLOYEE = 'Сотрудник отдела'
 ADMIN = 'Администратор'
 
 ROLE_CHOICES = [
@@ -17,7 +17,7 @@ ROLE_CHOICES = [
     (DEPUTY_DIRECTOR, 'Заместитель директора'),
     (HEAD_DEPARTMENT, 'Начальник отдела'),
     (DEPUTY_HEAD_DEPARTMENT, 'Заместитель начальника отдела'),
-    (EMPLOYEE_DEPARTMENT, 'Сотрудник отдела'),
+    (EMPLOYEE, 'Сотрудник отдела'),
     (ADMIN, 'Администратор')
 ]
 
@@ -106,7 +106,7 @@ class CustomUser(AbstractUser):
         'Статус',
         max_length=64,
         choices=ROLE_CHOICES,
-        default=EMPLOYEE_DEPARTMENT
+        default=EMPLOYEE
     )
 
     USERNAME_FIELD = 'email'
