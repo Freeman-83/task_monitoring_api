@@ -164,13 +164,21 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAdminOrManagerOrReadOnly,)
     )
     def redirect_task(self, request, pk):
-        current_task = get_object_or_404(
+        if request.user.is_staff:
+            current_task = get_object_or_404(
             Task,
             pk=pk,
-            executors__id=self.request.user.id,
             is_completed=False,
             execution_date__gt=date.today() + settings.EXECUTION_REMINDER_PERIOD
         )
+        else:
+            current_task = get_object_or_404(
+                Task,
+                pk=pk,
+                executors__id=self.request.user.id,
+                is_completed=False,
+                execution_date__gt=date.today() + settings.EXECUTION_REMINDER_PERIOD
+            )
 
         parent_task_data = model_to_dict(current_task)
 

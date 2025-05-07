@@ -33,7 +33,7 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
 
     def get_queryset(self):
         request_user = self.context['request'].user
-        subordinate_departments = request_user.subordinate_departments.all()
+        # subordinate_departments = request_user.subordinate_departments.all()
         if request_user.is_deputy_director():
             return User.objects.exclude(role=ROLE_CHOICES[0][0])
         elif request_user.is_head_department():
@@ -41,7 +41,7 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
         elif request_user.is_deputy_head_department():
             return User.objects.filter(
                 department=request_user.department,
-                role=ROLE_CHOICES[0][4]
+                role=ROLE_CHOICES[4][0]
             )
         return User.objects.all()
 
@@ -74,7 +74,8 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             queryset=Task.objects.all(),
             fields=[
                 'title',
-                'group',
+                'number',
+                'author',
                 'assignment_date'
             ]
         )

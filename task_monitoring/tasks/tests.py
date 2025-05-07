@@ -105,7 +105,7 @@ class TaskTests(APITestCase):
 
     def setUp(self):
         self.group = Group.objects.create(
-            name='test_group'
+            name='test group 1'
         )
         task_data = {
             'title': 'test task 1',
@@ -117,56 +117,159 @@ class TaskTests(APITestCase):
         }
         self.task = Task.objects.create(**task_data)
         self.task.executors.set(
-            [TaskTests.deputy_director, TaskTests.head_department]
+            [TaskTests.deputy_director,]
         )
 
 
     def test_get_groups(self):
-        """Проверка доступности url групп для Админа."""
+        """Проверка доступности просмотра групп для Админа."""
 
         url = '/api/groups/'
-        response = TaskTests.auth_admin.get(url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        tests_data = {
+            TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
+            TaskTests.auth_director: ['director', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_head_department: ['head_department', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_employee: ['employee', status.HTTP_403_FORBIDDEN],
+            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+        }
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+            )
+
+
+    def test_create_group(self):
+        """Проверка доступности создания группы для Админа."""
+
+        url = '/api/groups/'
+
+        group_data = {'name': 'test griop 2'}
+
+        tests_data = {
+            TaskTests.auth_admin: ['admin', status.HTTP_201_CREATED],
+            TaskTests.auth_director: ['director', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_head_department: ['head_department', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_employee: ['employee', status.HTTP_403_FORBIDDEN],
+            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+        }
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.post(url, group_data).status_code,
+                data[1],
+                f'Статус запроса для {data[0]} не соответствует ожидаемому!'
+            )
 
 
     def test_get_tasks(self):
-        """Проверка доступности url поручений для разных пользователей."""
+        """Проверка прав на просмотр поручений для разных пользователей."""
 
         url = '/api/tasks/'
-        director_response = TaskTests.auth_director.get(url)
-        deputy_director_response = TaskTests.auth_director.get(url)
-        head_department_response = TaskTests.auth_head_department.get(url)
+        
+        tests_data = {
+            TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
+            TaskTests.auth_director: ['director', status.HTTP_200_OK],
+            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_200_OK],
+            TaskTests.auth_head_department: ['head_department', status.HTTP_200_OK],
+            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_200_OK],
+            TaskTests.auth_employee: ['employee', status.HTTP_200_OK],
+            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+        }
 
-        self.assertEqual(
-            director_response.status_code, status.HTTP_200_OK
-        )
-        self.assertEqual(
-            deputy_director_response.status_code, status.HTTP_200_OK
-        )
-        self.assertEqual(
-            head_department_response.status_code, status.HTTP_200_OK
-        )
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+            )
+
+
+    def test_get_current_task(self):
+        """
+        Проверка прав на просмотр поручения для инициатора и исполнителей
+        и недоступности для остального персонала (кроме админа).
+        """
+
+        url = f'/api/tasks/{self.task.id}/'
+
+        tests_data = {
+            TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
+            TaskTests.auth_director: ['director', status.HTTP_200_OK],
+            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_200_OK],
+            TaskTests.auth_head_department: ['head_department', status.HTTP_404_NOT_FOUND],
+            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_404_NOT_FOUND],
+            TaskTests.auth_employee: ['employee', status.HTTP_404_NOT_FOUND],
+            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+            )
 
 
     def test_create_task(self):
+        """Проверка создания поручения и соответствующих прав."""
+
         url = '/api/tasks/'
+
         task_data = {
             'title': 'test task 2',
             'number': '2',
             'group': self.group.id,
             'execution_date': date.today() + timedelta(days=10),
             'description': 'test description 2',
-            'executors': [TaskTests.deputy_director.id, TaskTests.head_department.id]
+            'executors': [TaskTests.head_department.id]
         }
-        response = TaskTests.auth_director.post(url, task_data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        tests_data = {
+            TaskTests.auth_admin: ['admin', status.HTTP_201_CREATED],
+            TaskTests.auth_director: ['director', status.HTTP_201_CREATED],
+            TaskTests.auth_employee: ['employee', status.HTTP_403_FORBIDDEN],
+            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.post(url, task_data).status_code,
+                data[1],
+                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+            )
+            task_data['number'] = str(int(task_data['number']) + 1)
 
 
     def test_redirect_task(self):
+        """Проверка создания перенаправление поручения и соответствующих прав."""
+
         url = f'/api/tasks/{self.task.id}/redirect_task/'
 
-        response = TaskTests.auth_deputy_director.post(
-            url, data={'executors': [TaskTests.deputy_head_department.id]}
+        response_admin = TaskTests.auth_admin.post(
+            url, data={'executors': [TaskTests.director.id]}
+        )
+        response_executor = TaskTests.auth_deputy_director.post(
+            url, data={'executors': [TaskTests.head_department.id]}
+        )
+        response_not_executor = TaskTests.auth_deputy_head_department.post(
+            url, data={'executors': [TaskTests.employee.id]}
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        tests_data = {
+            response_admin: ['admin', status.HTTP_201_CREATED],
+            response_executor: ['director', status.HTTP_201_CREATED],
+            response_not_executor: ['employee', status.HTTP_404_NOT_FOUND],
+        }
+
+        for response, data in tests_data.items():
+            self.assertEqual(
+                response.status_code,
+                data[1],
+                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+            )

@@ -101,6 +101,7 @@ class Task(models.Model):
             models.UniqueConstraint(
                 fields=[
                     'title',
+                    'number',
                     'author',
                     'assignment_date',
                 ],
