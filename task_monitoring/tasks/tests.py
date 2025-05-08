@@ -1,12 +1,9 @@
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
-from django.forms.models import model_to_dict
-from django.urls import reverse
 
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
-from http import HTTPStatus
 
 from tasks.models import Task, Group
 from users.models import Department, ROLE_CHOICES
@@ -24,7 +21,8 @@ class TaskTests(APITestCase):
         admin_token = 'admin_token'
         director_token = 'director_token'
         deputy_director_token = 'deputy_director_token'
-        head_department_token = 'head_department_token'
+        head_department_token_1 = 'head_department_token_1'
+        head_department_token_2 = 'head_department_token_2'
         deputy_head_department_token = 'deputy_head_department_token'
         employee_token_1 = 'employee_token_1'
         employee_token_2 = 'employee_token_2'
@@ -55,12 +53,19 @@ class TaskTests(APITestCase):
             last_name='Petrov',
             role=ROLE_CHOICES[1][0]
         )
-        cls.head_department = User.objects.create(
-            email='head_department@mail.ru',
+        cls.head_department_1 = User.objects.create(
+            email='head_department1@mail.ru',
             first_name='Sidor',
             last_name='Sidorov',
             role=ROLE_CHOICES[2][0],
             department=cls.department_1
+        )
+        cls.head_department_2 = User.objects.create(
+            email='head_department2@mail.ru',
+            first_name='Sidor',
+            last_name='Sidorov',
+            role=ROLE_CHOICES[2][0],
+            department=cls.department_2
         )
         cls.deputy_head_department = User.objects.create(
             email='deputy_head_department@mail.ru',
@@ -89,7 +94,8 @@ class TaskTests(APITestCase):
         cls.auth_admin = APIClient()
         cls.auth_director = APIClient()
         cls.auth_deputy_director = APIClient()
-        cls.auth_head_department = APIClient()
+        cls.auth_head_department_1 = APIClient()
+        cls.auth_head_department_2 = APIClient()
         cls.auth_deputy_head_department = APIClient()
         cls.auth_employee_1 = APIClient()
         cls.auth_employee_2 = APIClient()
@@ -103,8 +109,11 @@ class TaskTests(APITestCase):
         cls.auth_deputy_director.force_authenticate(
             cls.deputy_director, token=deputy_director_token
         )
-        cls.auth_head_department.force_authenticate(
-            cls.head_department, token=head_department_token
+        cls.auth_head_department_1.force_authenticate(
+            cls.head_department_1, token=head_department_token_1
+        )
+        cls.auth_head_department_2.force_authenticate(
+            cls.head_department_2, token=head_department_token_2
         )
         cls.auth_deputy_head_department.force_authenticate(
             cls.deputy_head_department, token=deputy_head_department_token
@@ -130,13 +139,11 @@ class TaskTests(APITestCase):
             'description': 'test description 1'
         }
         self.task = Task.objects.create(**task_data)
-        self.task.executors.set(
-            [TaskTests.director,]
-        )
+        self.task.executors.set([TaskTests.director, TaskTests.deputy_director])
 
 
     def test_get_groups(self):
-        """Проверка доступности просмотра групп для Админа."""
+        """Проверка прав на просмотр групп для Админа."""
 
         url = '/api/groups/'
 
@@ -144,7 +151,7 @@ class TaskTests(APITestCase):
             TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
             TaskTests.auth_director: ['director', status.HTTP_403_FORBIDDEN],
             TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_head_department: ['head_department', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_head_department_1: ['head_department', status.HTTP_403_FORBIDDEN],
             TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_403_FORBIDDEN],
             TaskTests.auth_employee_1: ['employee', status.HTTP_403_FORBIDDEN],
             TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
@@ -153,22 +160,22 @@ class TaskTests(APITestCase):
             self.assertEqual(
                 response_subject.get(url).status_code,
                 data[1],
-                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
 
 
     def test_create_group(self):
-        """Проверка доступности создания группы для Админа."""
+        """Проверка прав на создание группы для Админа."""
 
         url = '/api/groups/'
 
-        group_data = {'name': 'test griop 2'}
+        group_data = {'name': 'test group 2'}
 
         tests_data = {
             TaskTests.auth_admin: ['admin', status.HTTP_201_CREATED],
             TaskTests.auth_director: ['director', status.HTTP_403_FORBIDDEN],
             TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_head_department: ['head_department', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_head_department_1: ['head_department', status.HTTP_403_FORBIDDEN],
             TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_403_FORBIDDEN],
             TaskTests.auth_employee_1: ['employee', status.HTTP_403_FORBIDDEN],
             TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
@@ -177,7 +184,7 @@ class TaskTests(APITestCase):
             self.assertEqual(
                 response_subject.post(url, group_data).status_code,
                 data[1],
-                f'Статус запроса для {data[0]} не соответствует ожидаемому!'
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
 
 
@@ -190,7 +197,7 @@ class TaskTests(APITestCase):
             TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
             TaskTests.auth_director: ['director', status.HTTP_200_OK],
             TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_200_OK],
-            TaskTests.auth_head_department: ['head_department', status.HTTP_200_OK],
+            TaskTests.auth_head_department_1: ['head_department', status.HTTP_200_OK],
             TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_200_OK],
             TaskTests.auth_employee_1: ['employee', status.HTTP_200_OK],
             TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
@@ -200,7 +207,7 @@ class TaskTests(APITestCase):
             self.assertEqual(
                 response_subject.get(url).status_code,
                 data[1],
-                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
 
 
@@ -216,7 +223,7 @@ class TaskTests(APITestCase):
             TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
             TaskTests.auth_director: ['director', status.HTTP_200_OK],
             TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_200_OK],
-            TaskTests.auth_head_department: ['head_department', status.HTTP_404_NOT_FOUND],
+            TaskTests.auth_head_department_1: ['head_department', status.HTTP_404_NOT_FOUND],
             TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_404_NOT_FOUND],
             TaskTests.auth_employee_1: ['employee', status.HTTP_404_NOT_FOUND],
             TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
@@ -226,7 +233,7 @@ class TaskTests(APITestCase):
             self.assertEqual(
                 response_subject.get(url).status_code,
                 data[1],
-                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
 
 
@@ -241,14 +248,17 @@ class TaskTests(APITestCase):
             'group': self.group.id,
             'execution_date': date.today() + timedelta(days=10),
             'description': 'test description 2',
-            'executors': [TaskTests.head_department.id]
+            'executors': [TaskTests.employee_1.id]
         }
 
         tests_data = {
             TaskTests.auth_admin: ['admin', status.HTTP_201_CREATED],
             TaskTests.auth_director: ['director', status.HTTP_201_CREATED],
             TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_201_CREATED],
-            TaskTests.auth_employee_1: ['employee', status.HTTP_403_FORBIDDEN],
+            TaskTests.auth_head_department_1: ['head_department_1', status.HTTP_201_CREATED],
+            TaskTests.auth_head_department_2: ['head_department_2', status.HTTP_400_BAD_REQUEST],
+            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_201_CREATED],
+            TaskTests.auth_employee_2: ['employee_2', status.HTTP_403_FORBIDDEN],
             TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
         }
 
@@ -256,7 +266,7 @@ class TaskTests(APITestCase):
             self.assertEqual(
                 response_subject.post(url, task_data).status_code,
                 data[1],
-                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
             task_data['number'] = str(int(task_data['number']) + 1)
 
@@ -266,28 +276,38 @@ class TaskTests(APITestCase):
 
         url = '/api/tasks/{}/redirect_task/'
 
-        # print(model_to_dict(self.task))
-        # print(response_admin.data)
-
         response_executor_director = TaskTests.auth_director.post(
-            url.format(self.task.id), data={'executors': [TaskTests.deputy_director.id]}
+            url.format(self.task.id),
+            data={'executors': [TaskTests.deputy_director.id]}
         )
-
         response_executor_deputy_director = TaskTests.auth_deputy_director.post(
-            url.format(response_executor_director.data['id']), data={'executors': [TaskTests.head_department.id]}
+            url.format(response_executor_director.data['id']),
+            data={'executors': [TaskTests.head_department_1.id]}
         )
-        response_not_executor = TaskTests.auth_deputy_head_department.post(
-            url.format(response_executor_deputy_director.data['id']), data={'executors': [TaskTests.employee_1.id]}
+        response_executor_head_department_1 = TaskTests.auth_head_department_1.post(
+            url.format(response_executor_deputy_director.data['id']),
+            data={'executors': [TaskTests.deputy_head_department.id]}
         )
-        response_executor_head_department_for_not_curating_employee = TaskTests.auth_head_department.post(
-            url.format(5), data={'executors': [TaskTests.employee_2.id]}
+        response_executor_deputy_head_department = TaskTests.auth_deputy_head_department.post(
+            url.format(response_executor_head_department_1.data['id']),
+            data={'executors': [TaskTests.employee_1.id]}
+        )
+        response_not_executor = TaskTests.auth_head_department_2.post(
+            url.format(response_executor_deputy_head_department.data['id']),
+            data={'executors': [TaskTests.employee_2.id]}
+        )
+        response_head_department_for_not_curating_employee = TaskTests.auth_head_department_1.post(
+            url.format(response_executor_deputy_head_department.data['id']),
+            data={'executors': [TaskTests.employee_2.id]}
         )
 
         tests_data = {
             response_executor_director: ['director', status.HTTP_201_CREATED],
             response_executor_deputy_director: ['deputy_director', status.HTTP_201_CREATED],
+            response_executor_head_department_1: ['head_department_1', status.HTTP_201_CREATED],
+            response_executor_deputy_head_department: ['deputy_head_department', status.HTTP_201_CREATED],
             response_not_executor: ['not_executor', status.HTTP_404_NOT_FOUND],
-            response_executor_head_department_for_not_curating_employee: [
+            response_head_department_for_not_curating_employee: [
                 'head_department_for_not_curating_employee',
                 status.HTTP_404_NOT_FOUND
             ]
@@ -297,5 +317,5 @@ class TaskTests(APITestCase):
             self.assertEqual(
                 response.status_code,
                 data[1],
-                f'Статус запроса {data[0]} не соответствует ожидаемому!'
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )

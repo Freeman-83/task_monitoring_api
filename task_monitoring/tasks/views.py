@@ -98,20 +98,8 @@ class TaskViewSet(viewsets.ModelViewSet):
             return queryset
 
         if self.action in ['list', 'retrieve'] and not self.request.user.is_staff:
-            if self.request.user.is_director():
-                authors_queryset = Task.objects.filter(
-                    author=self.request.user.id
-                ).select_related(
-                    'group'
-                ).prefetch_related(
-                    'executors'
-                ).order_by(
-                    'execution_date'
-                ).all()
 
-                return authors_queryset
-
-            elif self.request.user.is_deputy_director() or self.request.user.is_head_department():
+            if self.request.user.is_deputy_director() or self.request.user.is_head_department():
                 authors_queryset = Task.objects.filter(
                     author=self.request.user.id
                 ).select_related(

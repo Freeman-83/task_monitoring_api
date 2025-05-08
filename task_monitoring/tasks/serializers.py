@@ -34,13 +34,22 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         request_user = self.context['request'].user
         if request_user.is_deputy_director():
-            return User.objects.exclude(role=ROLE_CHOICES[0][0])
+            return User.objects.exclude(
+                pk=request_user.id,
+                role=ROLE_CHOICES[0][0]
+            )
         elif request_user.is_head_department():
-            return User.objects.filter(department=request_user.department)
+            return User.objects.filter(
+                department=request_user.department
+            ).exclude(
+                pk=request_user.id
+            )
         elif request_user.is_deputy_head_department():
             return User.objects.filter(
                 department=request_user.department,
                 role=ROLE_CHOICES[4][0]
+            ).exclude(
+                pk=request_user.id
             )
         return User.objects.all()
 
