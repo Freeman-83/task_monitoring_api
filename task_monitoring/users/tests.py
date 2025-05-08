@@ -55,7 +55,7 @@ class CustomUserTests(APITestCase):
 
 
     def test_create_user(self):
-        """Проверка создания пользователя."""
+        """Проверка создания пользователя Админом."""
 
         response = CustomUserTests.auth_admin.post(
             CustomUserTests.create_user_url,
@@ -66,7 +66,7 @@ class CustomUserTests(APITestCase):
 
 
     def test_create_user_token(self):
-        """Проверка создания токена пользователя."""
+        """Проверка получения токена пользователя."""
 
         url = '/api/auth/token/login/'
 
