@@ -13,6 +13,7 @@ User = get_user_model()
 
 
 class TaskTests(APITestCase):
+    """Тестирование кейса поручений."""
 
     @classmethod
     def setUpClass(cls):
@@ -101,28 +102,36 @@ class TaskTests(APITestCase):
         cls.auth_employee_2 = APIClient()
 
         cls.auth_admin.force_authenticate(
-            cls.admin, token=admin_token
+            cls.admin,
+            admin_token
         )
         cls.auth_director.force_authenticate(
-            cls.director, token=director_token
+            cls.director,
+            director_token
         )
         cls.auth_deputy_director.force_authenticate(
-            cls.deputy_director, token=deputy_director_token
+            cls.deputy_director,
+            deputy_director_token
         )
         cls.auth_head_department_1.force_authenticate(
-            cls.head_department_1, token=head_department_token_1
+            cls.head_department_1,
+            head_department_token_1
         )
         cls.auth_head_department_2.force_authenticate(
-            cls.head_department_2, token=head_department_token_2
+            cls.head_department_2,
+            head_department_token_2
         )
         cls.auth_deputy_head_department.force_authenticate(
-            cls.deputy_head_department, token=deputy_head_department_token
+            cls.deputy_head_department,
+            deputy_head_department_token
         )
         cls.auth_employee_1.force_authenticate(
-            cls.employee_1, token=employee_token_1
+            cls.employee_1,
+            employee_token_1
         )
         cls.auth_employee_2.force_authenticate(
-            cls.employee_2, token=employee_token_2
+            cls.employee_2,
+            employee_token_2
         )
 
 
@@ -148,14 +157,29 @@ class TaskTests(APITestCase):
         url = '/api/groups/'
 
         tests_data = {
-            TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
-            TaskTests.auth_director: ['director', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_head_department_1: ['head_department', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_employee_1: ['employee', status.HTTP_403_FORBIDDEN],
-            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
         }
+
         for response_subject, data in tests_data.items():
             self.assertEqual(
                 response_subject.get(url).status_code,
@@ -172,13 +196,27 @@ class TaskTests(APITestCase):
         group_data = {'name': 'test group 2'}
 
         tests_data = {
-            TaskTests.auth_admin: ['admin', status.HTTP_201_CREATED],
-            TaskTests.auth_director: ['director', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_head_department_1: ['head_department', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_403_FORBIDDEN],
-            TaskTests.auth_employee_1: ['employee', status.HTTP_403_FORBIDDEN],
-            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_201_CREATED
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
         }
         for response_subject, data in tests_data.items():
             self.assertEqual(
@@ -194,13 +232,27 @@ class TaskTests(APITestCase):
         url = '/api/tasks/'
         
         tests_data = {
-            TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
-            TaskTests.auth_director: ['director', status.HTTP_200_OK],
-            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_200_OK],
-            TaskTests.auth_head_department_1: ['head_department', status.HTTP_200_OK],
-            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_200_OK],
-            TaskTests.auth_employee_1: ['employee', status.HTTP_200_OK],
-            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_200_OK
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_200_OK
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
         }
 
         for response_subject, data in tests_data.items():
@@ -220,13 +272,27 @@ class TaskTests(APITestCase):
         url = f'/api/tasks/{self.task.id}/'
 
         tests_data = {
-            TaskTests.auth_admin: ['admin', status.HTTP_200_OK],
-            TaskTests.auth_director: ['director', status.HTTP_200_OK],
-            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_200_OK],
-            TaskTests.auth_head_department_1: ['head_department', status.HTTP_404_NOT_FOUND],
-            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_404_NOT_FOUND],
-            TaskTests.auth_employee_1: ['employee', status.HTTP_404_NOT_FOUND],
-            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_404_NOT_FOUND
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_404_NOT_FOUND
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_404_NOT_FOUND
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
         }
 
         for response_subject, data in tests_data.items():
@@ -252,14 +318,30 @@ class TaskTests(APITestCase):
         }
 
         tests_data = {
-            TaskTests.auth_admin: ['admin', status.HTTP_201_CREATED],
-            TaskTests.auth_director: ['director', status.HTTP_201_CREATED],
-            TaskTests.auth_deputy_director: ['deputy_director', status.HTTP_201_CREATED],
-            TaskTests.auth_head_department_1: ['head_department_1', status.HTTP_201_CREATED],
-            TaskTests.auth_head_department_2: ['head_department_2', status.HTTP_400_BAD_REQUEST],
-            TaskTests.auth_deputy_head_department: ['deputy_head_department', status.HTTP_201_CREATED],
-            TaskTests.auth_employee_2: ['employee_2', status.HTTP_403_FORBIDDEN],
-            TaskTests.guest_client: ['guest_client', status.HTTP_401_UNAUTHORIZED]
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_201_CREATED
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_201_CREATED
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_201_CREATED
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department_1', status.HTTP_201_CREATED
+            ],
+            TaskTests.auth_head_department_2: [
+                'head_department_2', status.HTTP_400_BAD_REQUEST
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_201_CREATED
+            ],
+            TaskTests.auth_employee_2: [
+                'employee_2', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
         }
 
         for response_subject, data in tests_data.items():
@@ -278,38 +360,47 @@ class TaskTests(APITestCase):
 
         response_executor_director = TaskTests.auth_director.post(
             url.format(self.task.id),
-            data={'executors': [TaskTests.deputy_director.id]}
+            {'executors': [TaskTests.deputy_director.id]}
         )
         response_executor_deputy_director = TaskTests.auth_deputy_director.post(
             url.format(response_executor_director.data['id']),
-            data={'executors': [TaskTests.head_department_1.id]}
+            {'executors': [TaskTests.head_department_1.id]}
         )
         response_executor_head_department_1 = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_director.data['id']),
-            data={'executors': [TaskTests.deputy_head_department.id]}
+            {'executors': [TaskTests.deputy_head_department.id]}
         )
         response_executor_deputy_head_department = TaskTests.auth_deputy_head_department.post(
             url.format(response_executor_head_department_1.data['id']),
-            data={'executors': [TaskTests.employee_1.id]}
+            {'executors': [TaskTests.employee_1.id]}
         )
         response_not_executor = TaskTests.auth_head_department_2.post(
             url.format(response_executor_deputy_head_department.data['id']),
-            data={'executors': [TaskTests.employee_2.id]}
+            {'executors': [TaskTests.employee_2.id]}
         )
         response_head_department_for_not_curating_employee = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_head_department.data['id']),
-            data={'executors': [TaskTests.employee_2.id]}
+            {'executors': [TaskTests.employee_2.id]}
         )
 
         tests_data = {
-            response_executor_director: ['director', status.HTTP_201_CREATED],
-            response_executor_deputy_director: ['deputy_director', status.HTTP_201_CREATED],
-            response_executor_head_department_1: ['head_department_1', status.HTTP_201_CREATED],
-            response_executor_deputy_head_department: ['deputy_head_department', status.HTTP_201_CREATED],
-            response_not_executor: ['not_executor', status.HTTP_404_NOT_FOUND],
+            response_executor_director: [
+                'director', status.HTTP_201_CREATED
+            ],
+            response_executor_deputy_director: [
+                'deputy_director', status.HTTP_201_CREATED
+            ],
+            response_executor_head_department_1: [
+                'head_department_1', status.HTTP_201_CREATED
+            ],
+            response_executor_deputy_head_department: [
+                'deputy_head_department', status.HTTP_201_CREATED
+            ],
+            response_not_executor: [
+                'not_executor', status.HTTP_404_NOT_FOUND
+            ],
             response_head_department_for_not_curating_employee: [
-                'head_department_for_not_curating_employee',
-                status.HTTP_404_NOT_FOUND
+                'head_department_for_not_curating_employee', status.HTTP_404_NOT_FOUND
             ]
         }
 

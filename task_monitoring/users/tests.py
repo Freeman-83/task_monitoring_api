@@ -13,6 +13,7 @@ User = get_user_model()
 
 
 class CustomUserTests(APITestCase):
+    """Тестирование кейса пользователей."""
 
     @classmethod
     def setUpClass(cls):
@@ -48,10 +49,6 @@ class CustomUserTests(APITestCase):
         }
 
         cls.create_user_url = '/api/users/'
-
-
-    def setUp(self):
-        ...
 
 
     def test_create_user(self):
