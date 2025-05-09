@@ -17,10 +17,10 @@ services:
     gateway:
         build: ./nginx
         ports:
-            - 80:80
+            - 8000:80
         volumes:
-            - static_volume:/app/django/static
-            - media_volume:/app/django/media
+            - static_volume:/app/static
+            - media_volume:/app/media
         depends_on:
             - backend
 

@@ -12,7 +12,7 @@ COPY . .
 
 RUN python manage.py collectstatic
 
-# RUN cp -r collected_static/* static
+# RUN cp -r /app/collected_static/. /backend_static/static/
 
 EXPOSE 8000
 
