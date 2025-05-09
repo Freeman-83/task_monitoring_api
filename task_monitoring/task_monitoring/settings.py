@@ -145,8 +145,6 @@ DJOSER = {
     },
     'PERMISSIONS': {
         'user_create': ['rest_framework.permissions.IsAdminUser'],
-        # 'user': ['users.permissions.CustomUserPermission'],
-        # 'user_list': ['users.permissions.CustomUserPermission']
     }
 }
 
