@@ -4,6 +4,7 @@ from rest_framework import routers
 
 from tasks.views import TaskViewSet, GroupViewSet
 
+
 app_name = 'tasks'
 
 router_reports_v1 = routers.DefaultRouter()

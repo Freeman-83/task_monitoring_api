@@ -2,12 +2,8 @@ from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import transaction
-from django.db.models import Sum
 from django.forms.models import model_to_dict
-from django.shortcuts import get_object_or_404, render
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
+from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -18,16 +14,18 @@ from rest_framework.response import Response
 
 from rest_framework import (
     filters,
-    mixins,
     permissions,
     status,
-    views,
     viewsets
 )
 
 from tasks.models import Group, Task
 
-from tasks.serializers import GroupSerializer, TaskCreateSerializer, TaskGetSerializer
+from tasks.serializers import (
+    GroupSerializer,
+    TaskCreateSerializer,
+    TaskGetSerializer
+)
 
 from tasks.filters import TaskFilterSet
 

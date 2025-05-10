@@ -1,18 +1,14 @@
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
+
+from djoser.views import UserViewSet
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from djoser.conf import settings
-from djoser.views import UserViewSet
-
 from rest_framework import permissions, viewsets
 
-from users.models import CustomUser, Department
+from users.models import Department
 
 from users.serializers import CustomUserSerializer, DepartmentSerializer
-
-from tasks.permissions import IsAdminOrManagerOrReadOnly
 
 
 User = get_user_model()

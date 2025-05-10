@@ -1,8 +1,7 @@
-from datetime import timedelta, date, datetime
+from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.db import transaction
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
