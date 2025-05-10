@@ -6,11 +6,8 @@ from django.contrib.auth import get_user_model
 from django_filters.rest_framework import (
     FilterSet,
     BooleanFilter,
-    CharFilter,
     ModelMultipleChoiceFilter,
-    MultipleChoiceFilter,
-    AllValuesMultipleFilter,
-    ChoiceFilter
+    AllValuesMultipleFilter
 )
 
 from tasks.models import Task
@@ -46,7 +43,7 @@ class TaskFilterSet(FilterSet):
         return queryset.filter(
             is_completed=False,
             execution_date__gte=date.today(),
-            execution_date__lte=date.today() + settings.EXECUTION_REMINDER_PERIOD,
+            execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
         )
 
     def get_is_overdue(self, queryset, name, value):

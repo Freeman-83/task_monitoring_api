@@ -29,7 +29,7 @@ class StatusListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_completed=False,
                 execution_date__gte=date.today(),
-                execution_date__lte=date.today() + settings.EXECUTION_REMINDER_PERIOD,
+                execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
             )
         if self.value() == 'overdue':
             return queryset.filter(
