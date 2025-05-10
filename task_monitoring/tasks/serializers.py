@@ -132,7 +132,7 @@ class TaskGetSerializer(serializers.ModelSerializer):
     def get_is_urgent(self, task):
         return all([task.is_completed==False,
                     task.execution_date >= date.today(),
-                    task.execution_date <= date.today() + settings.EXECUTION_REMINDER_PERIOD])
+                    task.execution_date <= date.today() + settings.URGENT_EXECUTION_PERIOD])
     
     def get_is_overdue(self, task):
         return all([task.is_completed==False,
