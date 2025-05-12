@@ -12,8 +12,6 @@ COPY . .
 
 RUN python manage.py collectstatic
 
-# RUN cp -r /app/collected_static/. /backend_static/static/
-
 EXPOSE 8000
 
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "600", "task_monitoring.wsgi"]
