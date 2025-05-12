@@ -21,6 +21,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         'id',
         'email',
         'first_name',
+        'second_name',
         'last_name',
         'department',
         'role'

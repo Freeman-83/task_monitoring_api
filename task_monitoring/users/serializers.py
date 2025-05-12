@@ -19,6 +19,7 @@ class RegisterUserSerializer(UserCreateSerializer):
             'id',
             'email',
             'first_name',
+            'second_name',
             'last_name',
             'password',
             'department',
@@ -46,6 +47,7 @@ class CustomUserSerializer(UserSerializer):
             'id',
             'email',
             'first_name',
+            'second_name',
             'last_name',
             'department',
             'role',
@@ -85,6 +87,7 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'first_name',
+            'second_name',
             'last_name',
             'email',
             'department',

@@ -84,16 +84,20 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(
         _('email'),
-        max_length=254,
+        max_length=256,
         unique=True
     )
     first_name = models.CharField(
         'Имя',
-        max_length=150
+        max_length=128
+    )
+    second_name = models.CharField(
+        'Отчество',
+        max_length=128
     )
     last_name = models.CharField(
         'Фамилия',
-        max_length=150
+        max_length=128
     )
     department = models.ForeignKey(
         Department,
