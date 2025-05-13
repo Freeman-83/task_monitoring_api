@@ -25,8 +25,9 @@ class CustomUserTests(APITestCase):
 
         cls.admin = User.objects.create(
             email='admin@mail.ru',
-            first_name='Admin',
-            last_name='Adminov',
+            first_name='Админ',
+            second_name='Админыч',
+            last_name='Админов',
             role=ROLE_CHOICES[5][0],
             is_staff=True
         )
@@ -39,8 +40,9 @@ class CustomUserTests(APITestCase):
 
         cls.user_data = {
             'email': 'director@mail.ru',
-            'first_name': 'Ivan',
-            'last_name': 'Ivanov',
+            'first_name': 'Иван',
+            'second_name': 'Иванович',
+            'last_name': 'Иванов',
             'password': 'director_password',
             'role': ROLE_CHOICES[0][0],
             'department': cls.department.id

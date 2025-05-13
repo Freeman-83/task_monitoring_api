@@ -37,54 +37,62 @@ class TaskTests(APITestCase):
 
         cls.admin = User.objects.create(
             email='admin@mail.ru',
-            first_name='Admin',
-            last_name='Adminov',
+            first_name='Админ',
+            second_name='Админыч',
+            last_name='Админов',
             role=ROLE_CHOICES[5][0],
             is_staff=True
         )
         cls.director = User.objects.create(
             email='director@mail.ru',
-            first_name='Ivan',
-            last_name='Ivanov',
+            first_name='Иван',
+            second_name='Иванович',
+            last_name='Иванов',
             role=ROLE_CHOICES[0][0]
         )
         cls.deputy_director = User.objects.create(
             email='deputy_director@mail.ru',
-            first_name='Petr',
-            last_name='Petrov',
+            first_name='Петр',
+            second_name='Петрович',
+            last_name='Петров',
             role=ROLE_CHOICES[1][0]
         )
         cls.head_department_1 = User.objects.create(
             email='head_department1@mail.ru',
-            first_name='Sidor',
-            last_name='Sidorov',
+            first_name='Сидор',
+            second_name='Сидорович',
+            last_name='Сидоров',
             role=ROLE_CHOICES[2][0],
             department=cls.department_1
         )
         cls.head_department_2 = User.objects.create(
             email='head_department2@mail.ru',
-            first_name='Sidor',
-            last_name='Sidorov',
+            first_name='Александр',
+            second_name='Александрович',
+            last_name='Александров',
             role=ROLE_CHOICES[2][0],
             department=cls.department_2
         )
         cls.deputy_head_department = User.objects.create(
             email='deputy_head_department@mail.ru',
-            first_name='Gleb',
-            last_name='Glebov',
+            first_name='Глеб',
+            second_name='Глебович',
+            last_name='Глебов',
             role=ROLE_CHOICES[3][0],
             department=cls.department_1
         )
         cls.employee_1 = User.objects.create(
             email='employee1@mail.ru',
-            first_name='Boris',
-            last_name='Borisov',
+            first_name='Борис',
+            second_name='Борисович',
+            last_name='Борисов',
             department=cls.department_1
         )
         cls.employee_2 = User.objects.create(
             email='employee2@mail.ru',
-            first_name='Anton',
-            last_name='Antonov',
+            first_name='Антон',
+            second_name='Антонович',
+            last_name='Антонов',
             department=cls.department_2
         )
 

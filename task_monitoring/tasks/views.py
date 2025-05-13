@@ -162,7 +162,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 pk=pk,
                 executors__id=self.request.user.id,
                 is_completed=False,
-                execution_date__gt=date.today() + settings.EXECUTION_REMINDER_PERIOD
+                execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
 
         parent_task_data = model_to_dict(current_task)
