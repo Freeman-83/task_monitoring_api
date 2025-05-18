@@ -31,7 +31,7 @@ class CustomUserViewSet(UserViewSet):
     permission_classes = (permissions.IsAdminUser,)
 
     def get_queryset(self):
-        if self.action == 'list' and not self.request.user.is_staff:
+        if self.action in ['list', 'retrieve'] and not self.request.user.is_staff:
             return User.objects.filter(pk=self.request.user.id)
         return super().get_queryset()
 
