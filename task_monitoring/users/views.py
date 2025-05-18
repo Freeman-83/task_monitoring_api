@@ -30,11 +30,6 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     permission_classes = (permissions.IsAdminUser,)
 
-    def get_queryset(self):
-        if self.action in ['list', 'retrieve'] and not self.request.user.is_staff:
-            return User.objects.filter(pk=self.request.user.id)
-        return super().get_queryset()
-
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = (permissions.IsAuthenticated,)
