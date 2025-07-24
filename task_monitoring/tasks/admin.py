@@ -36,7 +36,6 @@ class StatusListFilter(admin.SimpleListFilter):
                 is_completed=False,
                 execution_date__lt=date.today()
             )
-        
 
 
 @admin.register(Group)
@@ -48,6 +47,11 @@ class GroupAdmin(admin.ModelAdmin):
     search_fields = ('name',)
     list_filter = ('name',)
     empty_value_display = '---'
+
+
+class RedirectedTasksAdmin(admin.TabularInline):
+    model = Task
+    min_num = 1
 
 
 @admin.register(Task)
@@ -83,3 +87,5 @@ class TaskAdmin(admin.ModelAdmin):
     )
     list_display_links = ('title',)
     empty_value_display = '---'
+
+    inlines = [RedirectedTasksAdmin,]
