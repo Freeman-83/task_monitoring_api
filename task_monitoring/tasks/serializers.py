@@ -97,6 +97,8 @@ class TaskCreateSerializer(serializers.ModelSerializer):
 class TaskGetSerializer(serializers.ModelSerializer):
     """Контекстный сериализатор Поручения."""
 
+    parent_task = serializers.StringRelatedField()
+    redirected_tasks = serializers.StringRelatedField(many=True)
     author = CustomUserContextSerializer(read_only=True)
     executors = CustomUserContextSerializer(
         read_only=True,
