@@ -61,7 +61,7 @@ class Task(models.Model):
     )
     parent_task = models.ForeignKey(
         'self',
-        verbose_name='Перенаправлено от',
+        verbose_name='Родительское поручение',
         related_name='redirected_tasks',
         on_delete=models.PROTECT,
         blank=True,

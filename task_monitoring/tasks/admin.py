@@ -52,6 +52,7 @@ class GroupAdmin(admin.ModelAdmin):
 class RedirectedTasksAdmin(admin.TabularInline):
     model = Task
     min_num = 1
+    verbose_name_plural = 'Перенаправленные поручения'
 
 
 @admin.register(Task)
