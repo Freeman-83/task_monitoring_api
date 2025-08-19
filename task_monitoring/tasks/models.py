@@ -7,24 +7,24 @@ User = get_user_model()
 
 
 class Group(models.Model):
-    """Модель типа задачи."""
+    """Модель типа поручения."""
 
     name = models.CharField(
-        'Ниманование типа задачи',
+        'Ниманование типа поручения',
         max_length=200
     )
 
     class Meta:
         ordering = ['name']
-        verbose_name = 'Тип задачи'
-        verbose_name_plural = 'Типы задач'
+        verbose_name = 'Тип поручения'
+        verbose_name_plural = 'Типы поручений'
 
     def __str__(self):
         return self.name
 
 
 class Task(models.Model):
-    """Модель Задачи."""
+    """Модель Поручения."""
     
     title = models.CharField(
         'Заголовок',
