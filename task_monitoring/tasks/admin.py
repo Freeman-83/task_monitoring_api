@@ -7,7 +7,7 @@ from .models import Group, Task
 
 
 class StatusListFilter(admin.SimpleListFilter):
-    """Кастомный фильтр для статуса исполнения поручения."""
+    """Кастомный фильтр статуса поручения."""
     
     title = 'Статус исполнения'
     parameter_name = 'execution_status'
@@ -17,7 +17,9 @@ class StatusListFilter(admin.SimpleListFilter):
             ('on_execution', 'На исполнении'),
             ('urgent', 'Срочные'),
             ('overdue', 'Просроченные'),
-            ('completed', 'Исполненные')
+            ('completed', 'Исполненные'),
+            ('outgoing', 'Исходящие'),
+            ('incoming', 'Входящие'),
         ]
 
     def queryset(self, request, queryset):
@@ -35,6 +37,14 @@ class StatusListFilter(admin.SimpleListFilter):
             return queryset.filter(
                 is_completed=False,
                 execution_date__lt=date.today()
+            )
+        if self.value() == 'outgoing':
+            return queryset.filter(
+                author=self.request.user
+            )
+        if self.value() == 'incoming':
+            return queryset.filter(
+                executors__id=self.request.user.id
             )
 
 

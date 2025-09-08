@@ -30,6 +30,12 @@ class TaskFilterSet(FilterSet):
     is_overdue = BooleanFilter(
         method='get_is_overdue'
     )
+    is_outgoing = BooleanFilter(
+        method='get_is_outgoing'
+    )
+    is_incoming = BooleanFilter(
+        method='get_is_incoming'
+    )
 
     class Meta:
         model = Task
@@ -50,4 +56,14 @@ class TaskFilterSet(FilterSet):
         return queryset.filter(
             is_completed=False,
             execution_date__lt=date.today()
+        )
+    
+    def get_is_outgoing(self, queryset, name, value):
+        return queryset.filter(
+            author=self.request.user
+        )
+    
+    def get_is_incoming(self, queryset, name, value):
+        return queryset.filter(
+            executors__id=self.request.user.id,
         )
