@@ -51,11 +51,6 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         db_index=True
     )
-    assignment_date = models.DateField(
-        'Дата поручения',
-        auto_now_add=True,
-        db_index=True
-    )
     description = models.TextField(
         'Описание',
         max_length=10000
@@ -72,6 +67,11 @@ class Task(models.Model):
         User,
         related_name='tasks',
         verbose_name='Исполнители'
+    )
+    assignment_date = models.DateField(
+        'Дата поручения',
+        auto_now_add=True,
+        db_index=True
     )
     execution_date = models.DateField(
         'Дата исполнения',
