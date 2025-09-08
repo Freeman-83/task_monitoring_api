@@ -48,7 +48,8 @@ class Task(models.Model):
         User,
         verbose_name='Инициатор',
         related_name='tasks_from',
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        db_index=True
     )
     assignment_date = models.DateField(
         'Дата поручения',
@@ -78,7 +79,8 @@ class Task(models.Model):
     )
     is_completed = models.BooleanField(
         'Статус исполнения',
-        default=False
+        default=False,
+        db_index=True
     )
     tasks_file = models.FileField(
         'Приложение',
