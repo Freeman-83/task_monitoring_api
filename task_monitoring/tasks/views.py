@@ -173,6 +173,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         parent_task_data['author'] = request.user
         parent_task_data['group'] = current_task.group
         parent_task_data['parent_task'] = current_task
+        parent_task_data['resolution'] = request.data.get('resolution')
 
         redirected_task = Task.objects.create(**parent_task_data)
 

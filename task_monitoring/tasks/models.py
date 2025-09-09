@@ -51,8 +51,8 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         db_index=True
     )
-    description = models.TextField(
-        'Описание',
+    resolution = models.TextField(
+        'Резолюция',
         max_length=10000
     )
     parent_task = models.ForeignKey(

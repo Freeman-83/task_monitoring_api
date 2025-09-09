@@ -153,7 +153,7 @@ class TaskTests(APITestCase):
             'author': TaskTests.admin,
             'group': self.group,
             'execution_date': date.today() + timedelta(days=4),
-            'description': 'test description 1'
+            'resolution': 'test resolution 1'
         }
         self.task = Task.objects.create(**task_data)
         self.task.executors.set([TaskTests.director, TaskTests.deputy_director])
@@ -321,7 +321,7 @@ class TaskTests(APITestCase):
             'number': '2',
             'group': self.group.id,
             'execution_date': date.today() + timedelta(days=10),
-            'description': 'test description 2',
+            'resolution': 'test resolution 2',
             'executors': [TaskTests.employee_1.id]
         }
 
@@ -368,27 +368,33 @@ class TaskTests(APITestCase):
 
         response_executor_director = TaskTests.auth_director.post(
             url.format(self.task.id),
-            {'executors': [TaskTests.deputy_director.id]}
+            {'executors': [TaskTests.deputy_director.id],
+             'resolution': 'redirected_resolution'}
         )
         response_executor_deputy_director = TaskTests.auth_deputy_director.post(
             url.format(response_executor_director.data['id']),
-            {'executors': [TaskTests.head_department_1.id]}
+            {'executors': [TaskTests.head_department_1.id],
+             'resolution': 'redirected_resolution'}
         )
         response_executor_head_department_1 = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_director.data['id']),
-            {'executors': [TaskTests.deputy_head_department.id]}
+            {'executors': [TaskTests.deputy_head_department.id],
+             'resolution': 'redirected_resolution'}
         )
         response_executor_deputy_head_department = TaskTests.auth_deputy_head_department.post(
             url.format(response_executor_head_department_1.data['id']),
-            {'executors': [TaskTests.employee_1.id]}
+            {'executors': [TaskTests.employee_1.id],
+             'resolution': 'redirected_resolution'}
         )
         response_not_executor = TaskTests.auth_head_department_2.post(
             url.format(response_executor_deputy_head_department.data['id']),
-            {'executors': [TaskTests.employee_2.id]}
+            {'executors': [TaskTests.employee_2.id],
+             'resolution': 'redirected_resolution'}
         )
         response_head_department_for_not_curating_employee = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_head_department.data['id']),
-            {'executors': [TaskTests.employee_2.id]}
+            {'executors': [TaskTests.employee_2.id],
+             'resolution': 'redirected_resolution'}
         )
 
         tests_data = {

@@ -73,7 +73,7 @@ class TaskAdmin(admin.ModelAdmin):
         'title',
         'number',
         'parent_task',
-        'description',
+        'resolution',
         'author',
         'assignment_date',
         'execution_date',
