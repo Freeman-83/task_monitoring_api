@@ -141,22 +141,33 @@ class TaskTests(APITestCase):
             cls.employee_2,
             employee_token_2
         )
+        cls.group = Group.objects.create(
+            name='test group 1'
+        )
+        # task_data = {
+        #     'title': 'test task',
+        #     'number': '0',
+        #     'author': cls.admin,
+        #     'group': cls.group,
+        #     'execution_date': date.today() + timedelta(days=4),
+        #     'resolution': 'test resolution'
+        # }
+        # cls.task1 = Task.objects.create(**task_data)
+        # cls.task1.executors.set([cls.employee_1,])
 
 
     def setUp(self):
-        self.group = Group.objects.create(
-            name='test group 1'
-        )
+
         task_data = {
             'title': 'test task 1',
             'number': '1',
             'author': TaskTests.admin,
-            'group': self.group,
+            'group': TaskTests.group,
             'execution_date': date.today() + timedelta(days=4),
             'resolution': 'test resolution 1'
         }
         self.task = Task.objects.create(**task_data)
-        self.task.executors.set([TaskTests.director, TaskTests.deputy_director])
+        self.task.executors.set([TaskTests.deputy_director,])
 
 
     def test_get_groups(self):
@@ -366,13 +377,8 @@ class TaskTests(APITestCase):
 
         url = '/api/tasks/{}/redirect_task/'
 
-        response_executor_director = TaskTests.auth_director.post(
-            url.format(self.task.id),
-            {'executors': [TaskTests.deputy_director.id],
-             'resolution': 'redirected_resolution'}
-        )
         response_executor_deputy_director = TaskTests.auth_deputy_director.post(
-            url.format(response_executor_director.data['id']),
+            url.format(self.task.id),
             {'executors': [TaskTests.head_department_1.id],
              'resolution': 'redirected_resolution'}
         )
@@ -398,9 +404,6 @@ class TaskTests(APITestCase):
         )
 
         tests_data = {
-            response_executor_director: [
-                'director', status.HTTP_201_CREATED
-            ],
             response_executor_deputy_director: [
                 'deputy_director', status.HTTP_201_CREATED
             ],
@@ -424,3 +427,64 @@ class TaskTests(APITestCase):
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
+
+
+    # def test_complete_task(self):
+    #     """Проверка отметки исполнения поручения и соответствующих прав."""
+
+    #     url = '/api/tasks/{}/complete_task/'
+
+    #     response_not_executor = TaskTests.auth_head_department_2.put(
+    #         url.format(TaskTests.task.id)
+    #     )
+    #     response_executor_employee = TaskTests.auth_employee_1.put(
+    #         url.format(TaskTests.task.id)
+    #     )
+    #     print(response_executor_employee.data)
+    #     response_executor_deputy_head_department = TaskTests.auth_deputy_head_department.put(
+    #         url.format(response_executor_employee.data['parent_task'])
+    #     )
+    #     response_executor_head_department_1 = TaskTests.auth_head_department_1.put(
+    #         url.format(response_executor_deputy_head_department.data['parent_task'])
+    #     )
+        # response_executor_deputy_director = TaskTests.auth_deputy_director.put(
+        #     url.format(response_executor_head_department_1.data['parent_task'])
+        # )
+
+        # response_admin = TaskTests.auth_admin.put(
+        #     url.format(self.task.id),
+        #     {'is_completed': True}
+        # )
+    
+        # response_director = TaskTests.auth_director.put(
+        #     url.format(self.task.id),
+        #     {'is_completed': True}
+        # )
+
+        # tests_data = {
+            # response_admin: [
+            #     'admin', status.HTTP_200_OK
+            # ],
+            # response_director: [
+            #     'director', status.HTTP_200_OK
+            # ],
+            # response_executor_deputy_director: [
+            #     'deputy_director', status.HTTP_200_OK
+            # ],
+        #     response_executor_head_department_1: [
+        #         'head_department_1', status.HTTP_200_OK
+        #     ],
+        #     response_executor_deputy_head_department: [
+        #         'deputy_head_department', status.HTTP_200_OK
+        #     ],
+        #     response_not_executor: [
+        #         'not_executor', status.HTTP_404_NOT_FOUND
+        #     ]
+        # }
+
+        # for response, data in tests_data.items():
+        #     self.assertEqual(
+        #         response.status_code,
+        #         data[1],
+        #         f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+        #     )        

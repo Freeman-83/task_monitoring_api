@@ -20,5 +20,6 @@ class IsAdminOrManagerOrReadOnly(permissions.BasePermission):
             (request.method in permissions.SAFE_METHODS
              and request.user in obj.executors.all())
             or request.user.is_staff
+            or request.user.is_director()
             or obj.author == request.user
         )
