@@ -423,8 +423,8 @@ class TaskTests(APITestCase):
     def test_complete_task(self):
         """Проверка отметки исполнения поручения и соответствующих прав."""
 
-        url_executor = '/api/tasks/{}/complete_executors_task/'
-        url_author = '/api/tasks/{}/complete_authors_task/'
+        url_executor = '/api/tasks/{}/complete_task_by_executor/'
+        url_author = '/api/tasks/{}/complete_task_by_author/'
 
 
         users: list = [
