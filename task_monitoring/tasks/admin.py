@@ -18,24 +18,24 @@ class StatusListFilter(admin.SimpleListFilter):
             ('urgent', 'Срочные'),
             ('overdue', 'Просроченные'),
             ('completed', 'Исполненные'),
-            ('outgoing', 'Исходящие'),
-            ('incoming', 'Входящие'),
+            ('outgoing', 'Исходящие поручения'),
+            ('incoming', 'Входящие поручения'),
         ]
 
     def queryset(self, request, queryset):
         if self.value() == 'on_execution':
-            return queryset.filter(is_completed=False)
+            return queryset.filter(is_completed_by_executor=False)
         if self.value() == 'completed':
             return queryset.filter(is_completed_by_author=True)
         if self.value() == 'urgent':
             return queryset.filter(
-                is_completed=False,
+                is_completed_by_executor=False,
                 execution_date__gte=date.today(),
                 execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
             )
         if self.value() == 'overdue':
             return queryset.filter(
-                is_completed=False,
+                is_completed_by_executor=False,
                 execution_date__lt=date.today()
             )
         if self.value() == 'outgoing':
