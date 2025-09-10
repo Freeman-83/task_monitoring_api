@@ -190,7 +190,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     @extend_schema(summary='Отметка об исполнении поручения')
     @action(
-        methods=['PUT'],
+        methods=['PATCH'],
         detail=True,
         permission_classes=(permissions.IsAuthenticated,)
     )

@@ -99,4 +99,4 @@ class TaskAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
     empty_value_display = '---'
 
-    inlines = [RedirectedTasksAdmin,]
+    # inlines = [RedirectedTasksAdmin,]
