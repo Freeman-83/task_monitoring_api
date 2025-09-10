@@ -26,7 +26,7 @@ class StatusListFilter(admin.SimpleListFilter):
         if self.value() == 'on_execution':
             return queryset.filter(is_completed=False)
         if self.value() == 'completed':
-            return queryset.filter(is_completed=True)
+            return queryset.filter(is_completed_by_author=True)
         if self.value() == 'urgent':
             return queryset.filter(
                 is_completed=False,
@@ -78,7 +78,8 @@ class TaskAdmin(admin.ModelAdmin):
         'assignment_date',
         'execution_date',
         'tasks_file',
-        'is_completed'
+        'is_completed_by_author',
+        'is_completed_by_executor'
     )
     search_fields = (
         'title',

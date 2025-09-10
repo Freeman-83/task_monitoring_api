@@ -77,8 +77,13 @@ class Task(models.Model):
         'Дата исполнения',
         db_index=True
     )
-    is_completed = models.BooleanField(
-        'Статус исполнения',
+    is_completed_by_author = models.BooleanField(
+        'Отметка об исполнении поручения инициатором',
+        default=False,
+        db_index=True
+    )
+    is_completed_by_executor = models.BooleanField(
+        'Отметка об исполнении поручения исполнителем',
         default=False,
         db_index=True
     )

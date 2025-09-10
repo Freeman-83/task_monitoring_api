@@ -423,7 +423,9 @@ class TaskTests(APITestCase):
     def test_complete_task(self):
         """Проверка отметки исполнения поручения и соответствующих прав."""
 
-        url = '/api/tasks/{}/complete_task/'
+        url_executor = '/api/tasks/{}/complete_executors_task/'
+        url_author = '/api/tasks/{}/complete_authors_task/'
+
 
         users: list = [
             TaskTests.director,
@@ -435,7 +437,7 @@ class TaskTests(APITestCase):
 
         tasks_list: list = []
 
-        for i in range(len(users)):
+        for i in range(len(users) - 1):
             task_data: dict = {
                 'title': f'test task {i}',
                 'number': f'{i}',
@@ -447,41 +449,41 @@ class TaskTests(APITestCase):
             }
 
             current_task = Task.objects.create(**task_data)
-            if (i + 1) < len(users):
-                current_task.executors.set([users[i + 1],])
+            current_task.executors.set([users[i + 1],])
             tasks_list.append(current_task)
 
-        print(tasks_list)
-        print(tasks_list[-1].id)
+        # запрос на исполнение для специалиста
         response_executor_employee = TaskTests.auth_employee_1.patch(
-            url.format(tasks_list[-1].id)
+            url_executor.format(tasks_list[-1].id)
         )
 
-        print(response_executor_employee.data)
-        print()
-        
-
+        # запрос на исполнение для заместителя начальника отдела
+        response_author_deputy_head_department = TaskTests.auth_deputy_head_department.patch(
+            url_author.format(tasks_list[-1].id)
+        )
         response_executor_deputy_head_department = TaskTests.auth_deputy_head_department.patch(
-            url.format(response_executor_employee.data['parent_task'])
+            url_executor.format(tasks_list[-2].id)
         )
 
-        print(response_executor_deputy_head_department.data['parent_task'])
-        print()
-
+        # запрос на исполнение для начальника отдела
+        response_author_head_department = TaskTests.auth_head_department_1.patch(
+            url_author.format(tasks_list[-2].id)
+        )
         response_executor_head_department = TaskTests.auth_head_department_1.patch(
-            url.format(response_executor_deputy_head_department.data['parent_task'])
+            url_executor.format(tasks_list[-3].id)
         )
 
-        print(response_executor_head_department.data['parent_task'])
-        print()
-
+        # запрос на исполнение для заместителя директора
+        response_author_deputy_director = TaskTests.auth_deputy_director.patch(
+            url_author.format(tasks_list[-3].id)
+        )
         response_executor_deputy_director = TaskTests.auth_deputy_director.patch(
-            url.format(response_executor_head_department.data['parent_task'])
+            url_executor.format(tasks_list[-4].id)
         )
 
-        print(response_executor_deputy_director.data['parent_task'])
+        # запрос на исполнение для директора
         response_director = TaskTests.auth_director.patch(
-            url.format(response_executor_deputy_director.data['parent_task'])
+            url_author.format(tasks_list[-4].id)
         )
 
         tests_data = {
@@ -491,37 +493,28 @@ class TaskTests(APITestCase):
             response_director: [
                 'director', status.HTTP_200_OK
             ],
+            response_author_deputy_director: [
+                'deputy_director', status.HTTP_200_OK
+            ],
             response_executor_deputy_director: [
                 'deputy_director', status.HTTP_200_OK
             ],
+            response_author_head_department: [
+                'head_department_1', status.HTTP_200_OK
+            ],
             response_executor_head_department: [
                 'head_department_1', status.HTTP_200_OK
+            ],
+            response_author_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK
             ],
             response_executor_deputy_head_department: [
                 'deputy_head_department', status.HTTP_200_OK
             ],
             response_executor_employee: [
                 'employee', status.HTTP_200_OK
-            ],
-            # response_not_executor: [
-            #     'not_executor', status.HTTP_404_NOT_FOUND
-            # ]
+            ]
         }
-        
-        
-        
-
-        # response_admin = TaskTests.auth_admin.put(
-        #     url.format(self.task.id),
-        #     {'is_completed': True}
-        # )
-    
-        # response_director = TaskTests.auth_director.put(
-        #     url.format(self.task.id),
-        #     {'is_completed': True}
-        # )
-
-        
 
         for response, data in tests_data.items():
             self.assertEqual(

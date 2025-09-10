@@ -72,7 +72,8 @@ class CustomUserSerializer(UserSerializer):
                     'author': f'{task.author.last_name} {task.author.first_name}',
                     'assignment_date': task.assignment_date,
                     'execution_date': task.execution_date,
-                    'is_completed': task.is_completed
+                    'is_completed_by_author': task.is_completed_by_author,
+                    'is_completed_by_executor': task.is_completed_by_executor
                 }
             )
 

@@ -155,14 +155,14 @@ class TaskViewSet(viewsets.ModelViewSet):
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
-                is_completed=False
+                is_completed_by_author=False
             )
         else:
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
                 executors__id=request.user.id,
-                is_completed=False,
+                is_completed_by_author=False,
                 execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
 
@@ -188,27 +188,55 @@ class TaskViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     
 
-    @extend_schema(summary='Отметка об исполнении поручения')
+    @extend_schema(summary='Отметка об исполнении поручения исполнителем')
     @action(
         methods=['PATCH'],
         detail=True,
         permission_classes=(permissions.IsAuthenticated,)
     )
-    def complete_task(self, request, pk):
+    def complete_task_by_executor(self, request, pk):
         if request.user.is_staff or request.user.is_director():
             curent_task = get_object_or_404(
                 Task,
                 pk=pk,
-                is_completed=False
+                is_completed_by_executor=False
             )
         else:
             curent_task = get_object_or_404(
                 Task,
                 pk=pk,
                 executors__id=request.user.id,
-                is_completed=False
+                is_completed_by_executor=False
             )
-        curent_task.is_completed = True
+        curent_task.is_completed_by_executor = True
+        curent_task.save()
+
+        serializer = self.get_serializer(curent_task)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    @extend_schema(summary='Отметка об исполнении поручения инициатором')
+    @action(
+        methods=['PATCH'],
+        detail=True,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def complete_task_by_author(self, request, pk):
+        if request.user.is_staff or request.user.is_director():
+            curent_task = get_object_or_404(
+                Task,
+                pk=pk,
+                is_completed_by_executor=True
+            )
+        else:
+            curent_task = get_object_or_404(
+                Task,
+                pk=pk,
+                author=request.user.id,
+                is_completed_by_executor=True
+            )
+        curent_task.is_completed_by_author = True
         curent_task.save()
 
         serializer = self.get_serializer(curent_task)

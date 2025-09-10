@@ -42,7 +42,8 @@ class TaskFilterSet(FilterSet):
         fields = (
             'group',
             'executors',
-            'is_completed'
+            'is_completed_by_author',
+            'is_completed_by_executor'
         )
 
     def get_is_urgent(self, queryset, name, value):
