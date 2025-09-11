@@ -102,7 +102,7 @@ class CustomUser(AbstractUser):
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,
-        related_name='users',
+        related_name='employees',
         null=True,
         blank=True
     )

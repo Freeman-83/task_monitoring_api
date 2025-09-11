@@ -111,5 +111,5 @@ class DepartmentSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'curator',
-            'users'
+            'employees'
         )

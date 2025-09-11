@@ -88,8 +88,20 @@ class Task(models.Model):
         db_index=True
     )
     tasks_file = models.FileField(
-        'Приложение',
+        'Приложение к поручению',
         upload_to='uploaded/tasks_files/',
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=['doc', 'docx', 'pdf', 'jpg', 'jpeg', 'png']
+            )
+        ],
+        help_text='Разрешенные расширения: doc, docx, pdf, jpg, jpeg, png.',
+        blank=True,
+        null=True
+    )
+    application = models.FileField(
+        'Приложение к исполнению',
+        upload_to='uploaded/applications/',
         validators=[
             FileExtensionValidator(
                 allowed_extensions=['doc', 'docx', 'pdf', 'jpg', 'jpeg', 'png']

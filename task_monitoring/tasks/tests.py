@@ -421,7 +421,7 @@ class TaskTests(APITestCase):
 
 
     def test_complete_task(self):
-        """Проверка отметки исполнения поручения и соответствующих прав."""
+        """Проверка отметки исполнения поручения автором и исполнителем."""
 
         url_executor = '/api/tasks/{}/complete_task_by_executor/'
         url_author = '/api/tasks/{}/complete_task_by_author/'

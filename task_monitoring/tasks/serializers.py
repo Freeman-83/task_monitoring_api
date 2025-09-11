@@ -92,6 +92,18 @@ class TaskCreateSerializer(serializers.ModelSerializer):
         if data['execution_date'] < date.today():
             raise serializers.ValidationError('Некорректная дата исполнения поручения!')
         return data
+    
+
+class TaskExecutorUpdateSerializer(serializers.ModelSerializer):
+    """Сериализатор изменения Поручения для исполнителя."""
+
+    class Meta:
+        model = Task
+        fields = (
+            'id',
+            'is_completed_by_executor',
+            'application'
+        )
 
 
 class TaskGetSerializer(serializers.ModelSerializer):

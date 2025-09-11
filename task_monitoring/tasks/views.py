@@ -24,7 +24,8 @@ from tasks.models import Group, Task
 from tasks.serializers import (
     GroupSerializer,
     TaskCreateSerializer,
-    TaskGetSerializer
+    TaskGetSerializer,
+    TaskExecutorUpdateSerializer
 )
 
 from tasks.filters import TaskFilterSet
@@ -56,7 +57,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     ordering_fields = ['name',]
 
 
-@extend_schema(tags=['Общий отчет по предобработке'])
+@extend_schema(tags=['Поручения'])
 @extend_schema_view(
     list=extend_schema(summary='Список поручений'),
     create=extend_schema(summary='Создание нового поручения'),
@@ -84,21 +85,22 @@ class TaskViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if not self.request.user.is_staff and not self.request.user.is_director():
 
-            if self.action in ['update', 'partial_update']:
-                queryset = Task.objects.filter(
-                    author=self.request.user.id,
-                    is_completed=False,
-                    execution_date__gt=date.today()
-                ).select_related(
-                    'group'
-                ).prefetch_related(
-                    'executors'
-                ).all()
+            if (self.request.user.is_deputy_director()
+                or self.request.user.is_head_department()
+                or self.request.user.is_deputy_head_department()):
 
-                return queryset
+                if self.action in ['update', 'partial_update', 'delete']:
+                    queryset = Task.objects.filter(
+                        author=self.request.user.id
+                    ).select_related(
+                        'group'
+                    ).prefetch_related(
+                        'executors'
+                    ).all()
 
-            if self.action in ['list', 'retrieve']:
-                if self.request.user.is_deputy_director() or self.request.user.is_head_department():
+                    return queryset
+
+                if self.action in ['list', 'retrieve']:
                     authors_queryset = Task.objects.filter(
                         author=self.request.user.id
                     ).select_related(
@@ -123,18 +125,18 @@ class TaskViewSet(viewsets.ModelViewSet):
 
                     return result_queryset
 
-                else:
-                    executors_queryset = Task.objects.filter(
-                        executors__id=self.request.user.id
-                    ).select_related(
-                        'group'
-                    ).prefetch_related(
-                        'executors'
-                    ).order_by(
-                        'execution_date'
-                    ).all()
+            else:
+                executors_queryset = Task.objects.filter(
+                    executors__id=self.request.user.id
+                ).select_related(
+                    'group'
+                ).prefetch_related(
+                    'executors'
+                ).order_by(
+                    'execution_date'
+                ).all()
 
-                    return executors_queryset
+                return executors_queryset
 
         return super().get_queryset()
 
@@ -152,11 +154,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def redirect_task(self, request, pk):
         if request.user.is_staff or request.user.is_director():
-            current_task = get_object_or_404(
-                Task,
-                pk=pk,
-                is_completed_by_author=False
-            )
+            current_task = get_object_or_404(Task, pk=pk)
         else:
             current_task = get_object_or_404(
                 Task,
@@ -192,15 +190,12 @@ class TaskViewSet(viewsets.ModelViewSet):
     @action(
         methods=['PATCH'],
         detail=True,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskExecutorUpdateSerializer
     )
     def complete_task_by_executor(self, request, pk):
         if request.user.is_staff or request.user.is_director():
-            curent_task = get_object_or_404(
-                Task,
-                pk=pk,
-                is_completed_by_executor=False
-            )
+            curent_task = get_object_or_404(Task, pk=pk)
         else:
             curent_task = get_object_or_404(
                 Task,
@@ -208,13 +203,14 @@ class TaskViewSet(viewsets.ModelViewSet):
                 executors__id=request.user.id,
                 is_completed_by_executor=False
             )
+
         curent_task.is_completed_by_executor = True
         curent_task.save()
 
         serializer = self.get_serializer(curent_task)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+
 
     @extend_schema(summary='Отметка об исполнении поручения инициатором')
     @action(
@@ -224,11 +220,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def complete_task_by_author(self, request, pk):
         if request.user.is_staff or request.user.is_director():
-            curent_task = get_object_or_404(
-                Task,
-                pk=pk,
-                is_completed_by_executor=True
-            )
+            curent_task = get_object_or_404(Task, pk=pk)
         else:
             curent_task = get_object_or_404(
                 Task,
