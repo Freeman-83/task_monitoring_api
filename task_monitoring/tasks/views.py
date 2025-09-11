@@ -164,26 +164,20 @@ class TaskViewSet(viewsets.ModelViewSet):
                 execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
 
-        parent_task_data = model_to_dict(current_task)
+        request_data = {
+            'title': current_task.title,
+            'group': current_task.group.id,
+            'parent_task': current_task.id,
+            'resolution': request.data.get('resolution'),
+            'executors': request.data.get('executors'),
+            'execution_date': request.data.get('execution_date')
+        }
 
-        parent_task_data.pop('id')
-        parent_task_data.pop('executors')
-
-        parent_task_data['author'] = request.user
-        parent_task_data['group'] = current_task.group
-        parent_task_data['parent_task'] = current_task
-        parent_task_data['resolution'] = request.data.get('resolution')
-
-        redirected_task = Task.objects.create(**parent_task_data)
-
-        new_executors = request.data.get('executors')
-        redirected_task.executors.set(new_executors)
-
-        redirected_task.save()
-
-        serializer = self.get_serializer(redirected_task)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        serializer = self.get_serializer(data=request_data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 
     @extend_schema(summary='Отметка об исполнении поручения исполнителем')
@@ -195,42 +189,58 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def complete_task_by_executor(self, request, pk):
         if request.user.is_staff or request.user.is_director():
-            curent_task = get_object_or_404(Task, pk=pk)
+            current_task = get_object_or_404(
+                Task,
+                pk=pk,
+                is_completed_by_executor=False
+            )
         else:
-            curent_task = get_object_or_404(
+            current_task = get_object_or_404(
                 Task,
                 pk=pk,
                 executors__id=request.user.id,
                 is_completed_by_executor=False
             )
 
-        curent_task.is_completed_by_executor = True
-        curent_task.save()
+        request_data = {
+            'is_completed_by_executor': True,
+            'application': request.data.get('application'),
+            'executions_comment': request.data.get('executions_comment')
+        }
 
-        serializer = self.get_serializer(curent_task)
+        serializer = self.get_serializer(
+            current_task,
+            data=request_data,
+            partial=True
+        )
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
     @extend_schema(summary='Отметка об исполнении поручения инициатором')
     @action(
         methods=['PATCH'],
         detail=True,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskGetSerializer
     )
     def complete_task_by_author(self, request, pk):
         if request.user.is_staff or request.user.is_director():
-            curent_task = get_object_or_404(Task, pk=pk)
+            current_task = get_object_or_404(Task, pk=pk)
         else:
-            curent_task = get_object_or_404(
+            current_task = get_object_or_404(
                 Task,
                 pk=pk,
                 author=request.user.id,
                 is_completed_by_executor=True
             )
-        curent_task.is_completed_by_author = True
-        curent_task.save()
 
-        serializer = self.get_serializer(curent_task)
+        current_task.is_completed_by_author = True
+        current_task.save()
+
+        serializer = self.get_serializer(current_task)
 
         return Response(serializer.data, status=status.HTTP_200_OK)

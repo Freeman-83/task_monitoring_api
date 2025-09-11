@@ -102,7 +102,8 @@ class TaskExecutorUpdateSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'is_completed_by_executor',
-            'application'
+            'application',
+            'executions_comment'
         )
 
 
@@ -136,7 +137,8 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'is_completed_by_author',
             'is_completed_by_executor',
             'is_urgent',
-            'is_overdue'
+            'is_overdue',
+            'executions_comment'
         )
 
     def to_representation(self, instance):

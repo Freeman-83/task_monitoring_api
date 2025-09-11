@@ -111,6 +111,12 @@ class Task(models.Model):
         blank=True,
         null=True
     )
+    executions_comment = models.TextField(
+        'Комментарий к исполнению',
+        max_length=10000,
+        blank=True,
+        null=True
+    )
 
     class Meta:
         ordering = ['execution_date']
