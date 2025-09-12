@@ -164,13 +164,15 @@ class TaskViewSet(viewsets.ModelViewSet):
                 execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
 
+        print(type(request.data.get('executors')))
+
         request_data = {
             'title': current_task.title,
             'group': current_task.group.id,
             'parent_task': current_task.id,
-            'resolution': request.data.get('resolution'),
+            'resolution': request.data.get('resolution', current_task.resolution),
             'executors': request.data.get('executors'),
-            'execution_date': request.data.get('execution_date')
+            'execution_date': request.data.get('execution_date', current_task.execution_date)
         }
 
         serializer = self.get_serializer(data=request_data)
