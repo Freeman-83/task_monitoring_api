@@ -161,6 +161,8 @@ class TaskTests(APITestCase):
         self.task = Task.objects.create(**task_data)
         self.task.executors.set([TaskTests.deputy_director,])
 
+        # print(self.task.__dict__['executors'])
+
 
     def test_get_groups(self):
         """Проверка прав на просмотр групп для Админа."""
@@ -373,31 +375,34 @@ class TaskTests(APITestCase):
             url.format(self.task.id),
             {'executors': [TaskTests.head_department_1.id,],
              'resolution': 'redirected_resolution',
-             'execution_date': self.task.execution_date - timedelta(days=1)}
+             'execution_date': self.task.execution_date - timedelta(days=1)},
+             content_type='application/json'
         )
-        print(response_executor_deputy_director.data['executors'])
         response_executor_head_department_1 = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_director.data['id']),
-            {'executors': [TaskTests.deputy_head_department.id],
+            {'executors': [TaskTests.deputy_head_department.id,],
              'resolution': 'redirected_resolution',
-             'execution_date': date(*map(int, response_executor_deputy_director.data['execution_date'].split('-'))) - timedelta(days=1)}
+             'execution_date': date(*map(int, response_executor_deputy_director.data['execution_date'].split('-'))) - timedelta(days=1)},
+             content_type='application/json'
         )
         response_executor_deputy_head_department = TaskTests.auth_deputy_head_department.post(
             url.format(response_executor_head_department_1.data['id']),
             {'executors': [TaskTests.employee_1.id,],
              'resolution': 'redirected_resolution',
-             'execution_date': date(*map(int, response_executor_head_department_1.data['execution_date'].split('-'))) - timedelta(days=1)}
+             'execution_date': date(*map(int, response_executor_head_department_1.data['execution_date'].split('-'))) - timedelta(days=1)},
+             content_type='application/json'
         )
-        
         response_not_executor = TaskTests.auth_head_department_2.post(
             url.format(response_executor_deputy_head_department.data['id']),
             {'executors': [TaskTests.employee_2.id,],
-             'resolution': 'redirected_resolution'}
+             'resolution': 'redirected_resolution'},
+             content_type='application/json'
         )
         response_head_department_for_not_curating_employee = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_head_department.data['id']),
             {'executors': [TaskTests.employee_2.id,],
-             'resolution': 'redirected_resolution'}
+             'resolution': 'redirected_resolution'},
+             content_type='application/json'
         )
 
         tests_data = {

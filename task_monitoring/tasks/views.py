@@ -164,8 +164,6 @@ class TaskViewSet(viewsets.ModelViewSet):
                 execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
 
-        print(type(request.data.get('executors')))
-
         request_data = {
             'title': current_task.title,
             'group': current_task.group.id,
