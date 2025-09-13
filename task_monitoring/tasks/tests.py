@@ -161,8 +161,6 @@ class TaskTests(APITestCase):
         self.task = Task.objects.create(**task_data)
         self.task.executors.set([TaskTests.deputy_director,])
 
-        # print(self.task.__dict__['executors'])
-
 
     def test_get_groups(self):
         """Проверка прав на просмотр групп для Админа."""
