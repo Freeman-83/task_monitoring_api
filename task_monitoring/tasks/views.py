@@ -160,7 +160,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                 Task,
                 pk=pk,
                 executors__id=request.user.id,
-                is_completed_by_author=False,
+                is_closed=False,
                 execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
 
@@ -187,23 +187,23 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskExecutorUpdateSerializer
     )
-    def complete_task_by_executor(self, request, pk):
+    def complete_task(self, request, pk):
         if request.user.is_staff or request.user.is_director():
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
-                is_completed_by_executor=False
+                is_completed=False
             )
         else:
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
                 executors__id=request.user.id,
-                is_completed_by_executor=False
+                is_completed=False
             )
 
         request_data = {
-            'is_completed_by_executor': True,
+            'is_completed': True,
             'application': request.data.get('application'),
             'executions_comment': request.data.get('executions_comment')
         }
@@ -227,7 +227,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskGetSerializer
     )
-    def complete_task_by_author(self, request, pk):
+    def close_task(self, request, pk):
         if request.user.is_staff or request.user.is_director():
             current_task = get_object_or_404(Task, pk=pk)
         else:
@@ -235,10 +235,10 @@ class TaskViewSet(viewsets.ModelViewSet):
                 Task,
                 pk=pk,
                 author=request.user.id,
-                is_completed_by_executor=True
+                is_completed=True
             )
 
-        current_task.is_completed_by_author = True
+        current_task.is_closed = True
         current_task.save()
 
         serializer = self.get_serializer(current_task)

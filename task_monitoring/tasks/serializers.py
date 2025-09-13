@@ -134,8 +134,8 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'resolution',
             'author',
             'executors',
-            'is_completed_by_author',
-            'is_completed_by_executor',
+            'is_closed',
+            'is_completed',
             'is_urgent',
             'is_overdue',
             'executions_comment'
@@ -147,10 +147,10 @@ class TaskGetSerializer(serializers.ModelSerializer):
         return data
 
     def get_is_urgent(self, task):
-        return all([task.is_completed_by_executor==False,
+        return all([task.is_completed==False,
                     task.execution_date >= date.today(),
                     task.execution_date <= date.today() + settings.URGENT_EXECUTION_PERIOD])
     
     def get_is_overdue(self, task):
-        return all([task.is_completed_by_executor==False,
+        return all([task.is_completed==False,
                     task.execution_date < date.today()])

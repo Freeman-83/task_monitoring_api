@@ -15,36 +15,28 @@ class StatusListFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         return [
             ('on_execution', 'На исполнении'),
-            ('urgent', 'Срочные'),
             ('overdue', 'Просроченные'),
             ('completed', 'Исполненные'),
-            ('outgoing', 'Исходящие поручения'),
-            ('incoming', 'Входящие поручения'),
+            ('closed', 'Закрытые')
         ]
 
     def queryset(self, request, queryset):
         if self.value() == 'on_execution':
-            return queryset.filter(is_completed_by_executor=False)
+            return queryset.filter(is_completed=False)
         if self.value() == 'completed':
-            return queryset.filter(is_completed_by_author=True)
+            return queryset.filter(is_completed=True)
+        if self.value() == 'closed':
+            return queryset.filter(is_closed=True)
         if self.value() == 'urgent':
             return queryset.filter(
-                is_completed_by_executor=False,
+                is_completed=False,
                 execution_date__gte=date.today(),
                 execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
             )
         if self.value() == 'overdue':
             return queryset.filter(
-                is_completed_by_executor=False,
+                is_completed=False,
                 execution_date__lt=date.today()
-            )
-        if self.value() == 'outgoing':
-            return queryset.filter(
-                author=self.request.user
-            )
-        if self.value() == 'incoming':
-            return queryset.filter(
-                executors__id=self.request.user.id
             )
 
 
@@ -78,8 +70,8 @@ class TaskAdmin(admin.ModelAdmin):
         'assignment_date',
         'execution_date',
         'tasks_file',
-        'is_completed_by_author',
-        'is_completed_by_executor'
+        'is_closed',
+        'is_completed'
     )
     search_fields = (
         'title',

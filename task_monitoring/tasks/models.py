@@ -47,7 +47,7 @@ class Task(models.Model):
     author = models.ForeignKey(
         User,
         verbose_name='Инициатор',
-        related_name='tasks_from',
+        related_name='author_tasks',
         on_delete=models.CASCADE,
         db_index=True
     )
@@ -65,7 +65,7 @@ class Task(models.Model):
     )
     executors = models.ManyToManyField(
         User,
-        related_name='tasks',
+        related_name='execution_tasks',
         verbose_name='Исполнители'
     )
     assignment_date = models.DateField(
@@ -77,12 +77,12 @@ class Task(models.Model):
         'Дата исполнения',
         db_index=True
     )
-    is_completed_by_author = models.BooleanField(
+    is_closed = models.BooleanField(
         'Отметка об исполнении поручения инициатором',
         default=False,
         db_index=True
     )
-    is_completed_by_executor = models.BooleanField(
+    is_completed = models.BooleanField(
         'Отметка об исполнении поручения исполнителем',
         default=False,
         db_index=True

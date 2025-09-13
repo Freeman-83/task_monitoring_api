@@ -19,10 +19,17 @@ User = get_user_model()
 class TaskFilterSet(FilterSet):
 
     group = AllValuesMultipleFilter(field_name='group')
-    executors = ModelMultipleChoiceFilter(
-        field_name='executors__id',
-        to_field_name='id',
+    author = ModelMultipleChoiceFilter(
+        field_name='author__last_name',
+        to_field_name='last_name',
         queryset=User.objects.all()
+    )
+    is_on_execution = BooleanFilter(
+        field_name='is_completed',
+        method='get_is_on_execution'
+    )
+    is_outgoing = BooleanFilter(
+        method='get_is_outgoing'
     )
     is_urgent = BooleanFilter(
         method='get_is_urgent'
@@ -30,24 +37,35 @@ class TaskFilterSet(FilterSet):
     is_overdue = BooleanFilter(
         method='get_is_overdue'
     )
-    is_outgoing = BooleanFilter(
-        method='get_is_outgoing'
+    is_completed = BooleanFilter(
+        field_name='is_completed',
+        method='get_is_completed'
     )
-    is_incoming = BooleanFilter(
-        method='get_is_incoming'
+    is_closed = BooleanFilter(
+        field_name='is_closed',
+        method='get_is_closed'
     )
 
     class Meta:
         model = Task
         fields = (
             'group',
-            'executors',
-            'is_completed_by_author',
-            'is_completed_by_executor'
+            'is_closed',
+            'is_completed'
         )
+
+    def get_is_on_execution(self, queryset, name, value):
+        return queryset.filter(
+            executors__id=self.request.user.id,
+            is_completed=False
+        )
+    
+    def get_is_outgoing(self, queryset, name, value):
+        return queryset.filter(author=self.request.user.id)
 
     def get_is_urgent(self, queryset, name, value):
         return queryset.filter(
+            executors__id=self.request.user.id,
             is_completed=False,
             execution_date__gte=date.today(),
             execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
@@ -55,16 +73,19 @@ class TaskFilterSet(FilterSet):
 
     def get_is_overdue(self, queryset, name, value):
         return queryset.filter(
+            executors__id=self.request.user.id,
             is_completed=False,
             execution_date__lt=date.today()
         )
-    
-    def get_is_outgoing(self, queryset, name, value):
-        return queryset.filter(
-            author=self.request.user
-        )
-    
-    def get_is_incoming(self, queryset, name, value):
+
+    def get_is_completed(self, queryset, name, value):
         return queryset.filter(
             executors__id=self.request.user.id,
+            is_completed=True
+        )
+
+    def get_is_closed(self, queryset, name, value):
+        return queryset.filter(
+            author=self.request.user,
+            is_closed=True
         )
