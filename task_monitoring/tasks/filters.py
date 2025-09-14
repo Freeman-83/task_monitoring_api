@@ -50,8 +50,12 @@ class TaskFilterSet(FilterSet):
         model = Task
         fields = (
             'group',
-            'is_closed',
-            'is_completed'
+            'is_on_execution',
+            'is_outgoing',
+            'is_urgent',
+            'is_overdue',
+            'is_completed',
+            'is_closed'
         )
 
     def get_is_on_execution(self, queryset, name, value):
