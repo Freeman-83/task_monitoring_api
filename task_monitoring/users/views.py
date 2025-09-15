@@ -4,7 +4,11 @@ from djoser.views import UserViewSet
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from rest_framework.authtoken.models import Token
 
 from users.models import Department
 
@@ -34,6 +38,15 @@ class CustomUserViewSet(UserViewSet):
         if self.action == 'me':
             self.permission_classes = (permissions.IsAuthenticated,)
         return super().get_permissions()
+
+    @action(
+        detail=True,
+        permission_classes=(permissions.IsAdminUser,)
+    )
+    def get_user_token(self, request, id):
+        current_user = self.queryset.get(pk=id)
+        token = Token.objects.get(user=current_user)
+        return Response({'Authorization': f'Token {token}'}, status=status.HTTP_200_OK)
 
 
 @extend_schema(tags=['Подразделения'])

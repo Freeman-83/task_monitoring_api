@@ -7,7 +7,8 @@ from django_filters.rest_framework import (
     FilterSet,
     BooleanFilter,
     ModelMultipleChoiceFilter,
-    AllValuesMultipleFilter
+    AllValuesMultipleFilter,
+    ChoiceFilter
 )
 
 from tasks.models import Task
@@ -20,13 +21,9 @@ class TaskFilterSet(FilterSet):
 
     group = AllValuesMultipleFilter(field_name='group')
     author = ModelMultipleChoiceFilter(
-        field_name='author__last_name',
-        to_field_name='last_name',
+        field_name='author__id',
+        to_field_name='id',
         queryset=User.objects.all()
-    )
-    is_on_execution = BooleanFilter(
-        field_name='is_completed',
-        method='get_is_on_execution'
     )
     is_outgoing = BooleanFilter(
         method='get_is_outgoing'
@@ -37,35 +34,25 @@ class TaskFilterSet(FilterSet):
     is_overdue = BooleanFilter(
         method='get_is_overdue'
     )
-    is_completed = BooleanFilter(
-        field_name='is_completed',
-        method='get_is_completed'
-    )
-    is_closed = BooleanFilter(
-        field_name='is_closed',
-        method='get_is_closed'
+    is_not_closed = BooleanFilter(
+        method='get_is_not_closed',
     )
 
     class Meta:
         model = Task
         fields = (
             'group',
-            'is_on_execution',
             'is_outgoing',
             'is_urgent',
             'is_overdue',
-            'is_completed',
-            'is_closed'
-        )
-
-    def get_is_on_execution(self, queryset, name, value):
-        return queryset.filter(
-            executors__id=self.request.user.id,
-            is_completed=False
+            'is_not_closed'
         )
     
     def get_is_outgoing(self, queryset, name, value):
-        return queryset.filter(author=self.request.user.id)
+        return queryset.filter(
+            author=self.request.user.id,
+            is_completed=False
+        )
 
     def get_is_urgent(self, queryset, name, value):
         return queryset.filter(
@@ -82,14 +69,9 @@ class TaskFilterSet(FilterSet):
             execution_date__lt=date.today()
         )
 
-    def get_is_completed(self, queryset, name, value):
-        return queryset.filter(
-            executors__id=self.request.user.id,
-            is_completed=True
-        )
-
-    def get_is_closed(self, queryset, name, value):
+    def get_is_not_closed(self, queryset, name, value):
         return queryset.filter(
             author=self.request.user,
-            is_closed=True
+            is_completed=True,
+            is_closed=False
         )
