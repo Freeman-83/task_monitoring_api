@@ -25,15 +25,19 @@ class TaskFilterSet(FilterSet):
         to_field_name='id',
         queryset=User.objects.all()
     )
+    is_on_execution = BooleanFilter(
+        field_name='is_completed',
+        method='get_is_completed'
+    )
     is_outgoing = BooleanFilter(
         method='get_is_outgoing'
     )
-    is_urgent = BooleanFilter(
-        method='get_is_urgent'
-    )
-    is_overdue = BooleanFilter(
-        method='get_is_overdue'
-    )
+    # is_urgent = BooleanFilter(
+    #     method='get_is_urgent'
+    # )
+    # is_overdue = BooleanFilter(
+    #     method='get_is_overdue'
+    # )
     is_not_closed = BooleanFilter(
         method='get_is_not_closed',
     )
@@ -42,36 +46,42 @@ class TaskFilterSet(FilterSet):
         model = Task
         fields = (
             'group',
-            'is_outgoing',
-            'is_urgent',
-            'is_overdue',
-            'is_not_closed'
+            'is_completed',
+            'is_closed',
+            # 'is_on_execution',
+            # 'is_outgoing',
+            # 'is_urgent',
+            # 'is_overdue',
+            # 'is_not_closed'
+        )
+
+    def get_is_completed(self, queryset, name, value):
+        return queryset.filter(
+            executors__id=self.request.user.id,
         )
     
     def get_is_outgoing(self, queryset, name, value):
         return queryset.filter(
-            author=self.request.user.id,
+            author=self.request.user,
             is_completed=False
         )
 
-    def get_is_urgent(self, queryset, name, value):
-        return queryset.filter(
-            executors__id=self.request.user.id,
-            is_completed=False,
-            execution_date__gte=date.today(),
-            execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
-        )
+    # def get_is_urgent(self, queryset, name, value):
+    #     return queryset.filter(
+    #         executors__id=self.request.user.id,
+    #         is_completed=False,
+    #         execution_date__gte=date.today(),
+    #         execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
+    #     )
 
-    def get_is_overdue(self, queryset, name, value):
-        return queryset.filter(
-            executors__id=self.request.user.id,
-            is_completed=False,
-            execution_date__lt=date.today()
-        )
+    # def get_is_overdue(self, queryset, name, value):
+    #     return queryset.filter(
+    #         executors__id=self.request.user.id,
+    #         is_completed=False,
+    #         execution_date__lt=date.today()
+    #     )
 
     def get_is_not_closed(self, queryset, name, value):
         return queryset.filter(
-            author=self.request.user,
-            is_completed=True,
-            is_closed=False
+            author=self.request.user.id,
         )

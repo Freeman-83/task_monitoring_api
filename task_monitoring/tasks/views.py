@@ -146,6 +146,50 @@ class TaskViewSet(viewsets.ModelViewSet):
         return super().get_serializer_class()
     
 
+    @extend_schema(summary='Поручения на исполнении')
+    @action(
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def on_execution_tasks(self, request):
+        tasks = Task.objects.filter(
+            executors__id=request.user.id,
+            is_completed=False
+        )
+        serializer = self.get_serializer(tasks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    @extend_schema(summary='Исходящие поручения')
+    @action(
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def outgoing_tasks(self, request):
+        tasks = Task.objects.filter(
+            author=request.user.id,
+            is_completed=False,
+            is_closed=False
+        )
+        serializer = self.get_serializer(tasks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+    @extend_schema(summary='Поручения на закрытие')
+    @action(
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def on_close_tasks(self, request):
+        tasks = Task.objects.filter(
+            author=request.user.id,
+            is_completed=True,
+            is_closed=False
+        )
+        serializer = self.get_serializer(tasks, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
     @extend_schema(summary='Перенаправление поручения')
     @action(
         methods=['POST'],
