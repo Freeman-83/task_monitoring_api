@@ -77,7 +77,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         'execution_date'
     ).all()
     serializer_class = TaskCreateSerializer
-    permission_classes=(IsAdminOrManagerOrReadOnly,)
+    permission_classes = (IsAdminOrManagerOrReadOnly,)
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter)
     filterset_class = TaskFilterSet
     ordering_fields = ('execution_date',)
@@ -152,12 +152,13 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,)
     )
     def on_execution_tasks(self, request):
-        tasks = Task.objects.filter(
+        queryset = Task.objects.filter(
             executors__id=request.user.id,
             is_completed=False
         )
+        tasks = self.paginate_queryset(queryset)
         serializer = self.get_serializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return self.get_paginated_response(serializer.data)
     
 
     @extend_schema(summary='Исходящие поручения')
@@ -166,13 +167,14 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,)
     )
     def outgoing_tasks(self, request):
-        tasks = Task.objects.filter(
+        queryset = Task.objects.filter(
             author=request.user.id,
             is_completed=False,
             is_closed=False
         )
+        tasks = self.paginate_queryset(queryset)
         serializer = self.get_serializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return self.get_paginated_response(serializer.data)
     
 
     @extend_schema(summary='Поручения на закрытие')
@@ -181,13 +183,47 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,)
     )
     def on_close_tasks(self, request):
-        tasks = Task.objects.filter(
+        queryset = Task.objects.filter(
             author=request.user.id,
             is_completed=True,
             is_closed=False
         )
+        tasks = self.paginate_queryset(queryset)
         serializer = self.get_serializer(tasks, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return self.get_paginated_response(serializer.data)
+    
+
+    @extend_schema(summary='Поручения на срочное закрытие')
+    @action(
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def urgent_tasks(self, request):
+        queryset = Task.objects.filter(
+            executors__id=request.user.id,
+            is_completed=False,
+            execution_date__gte=date.today(),
+            execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD
+        )
+        tasks = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(tasks, many=True)
+        return self.get_paginated_response(serializer.data)
+    
+
+    @extend_schema(summary='Просроченные поручения')
+    @action(
+        detail=False,
+        permission_classes=(permissions.IsAuthenticated,)
+    )
+    def overdue_tasks(self, request):
+        queryset = Task.objects.filter(
+            executors__id=request.user.id,
+            is_completed=False,
+            execution_date__lt=date.today()
+        )
+        tasks = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(tasks, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
     @extend_schema(summary='Перенаправление поручения')
