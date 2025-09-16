@@ -149,7 +149,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(summary='Поручения на исполнении')
     @action(
         detail=False,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskGetSerializer
     )
     def on_execution_tasks(self, request):
         queryset = Task.objects.filter(
@@ -164,7 +165,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(summary='Исходящие поручения')
     @action(
         detail=False,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskGetSerializer
     )
     def outgoing_tasks(self, request):
         queryset = Task.objects.filter(
@@ -180,7 +182,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(summary='Поручения на закрытие')
     @action(
         detail=False,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskGetSerializer
     )
     def on_close_tasks(self, request):
         queryset = Task.objects.filter(
@@ -196,7 +199,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(summary='Поручения на срочное закрытие')
     @action(
         detail=False,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskGetSerializer
     )
     def urgent_tasks(self, request):
         queryset = Task.objects.filter(
@@ -213,7 +217,8 @@ class TaskViewSet(viewsets.ModelViewSet):
     @extend_schema(summary='Просроченные поручения')
     @action(
         detail=False,
-        permission_classes=(permissions.IsAuthenticated,)
+        permission_classes=(permissions.IsAuthenticated,),
+        serializer_class=TaskGetSerializer
     )
     def overdue_tasks(self, request):
         queryset = Task.objects.filter(
