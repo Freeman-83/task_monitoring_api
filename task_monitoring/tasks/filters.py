@@ -7,7 +7,9 @@ from django_filters.rest_framework import (
     FilterSet,
     BooleanFilter,
     ModelMultipleChoiceFilter,
-    AllValuesMultipleFilter
+    AllValuesMultipleFilter,
+    DateFilter,
+    DateFromToRangeFilter
 )
 
 from tasks.models import Task
@@ -22,34 +24,35 @@ class TaskFilterSet(FilterSet):
     author = ModelMultipleChoiceFilter(
         field_name='author__id',
         to_field_name='id',
+        label='Инициатор',
         queryset=User.objects.all()
     )
-    is_urgent = BooleanFilter(
-        method='get_is_urgent'
+    executors = ModelMultipleChoiceFilter(
+        field_name='executors',
+        label='Исполнители',
+        queryset=User.objects.all()
     )
-    is_overdue = BooleanFilter(
-        method='get_is_overdue'
+    assignment_date = DateFromToRangeFilter(
+        label='Дата поручения'
+    )
+    execution_date = DateFromToRangeFilter(
+        label='Дата исполнения'
+    )
+    is_closed = BooleanFilter(
+        label='Закрытые'
+    )
+    is_completed = BooleanFilter(
+        label='Исполненные'
     )
 
     class Meta:
         model = Task
         fields = (
             'group',
-            'is_urgent',
-            'is_overdue'
-        )
-
-    def get_is_urgent(self, queryset, name, value):
-        return queryset.filter(
-            executors__id=self.request.user.id,
-            is_completed=False,
-            execution_date__gte=date.today(),
-            execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD,
-        )
-
-    def get_is_overdue(self, queryset, name, value):
-        return queryset.filter(
-            executors__id=self.request.user.id,
-            is_completed=False,
-            execution_date__lt=date.today()
+            'author',
+            'executors',
+            'assignment_date',
+            'execution_date',
+            'is_closed',
+            'is_completed'
         )

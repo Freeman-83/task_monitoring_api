@@ -152,7 +152,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskGetSerializer
     )
-    def on_execution_tasks(self, request):
+    def get_on_execution_tasks(self, request):
         queryset = Task.objects.filter(
             executors__id=request.user.id,
             is_completed=False
@@ -168,7 +168,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskGetSerializer
     )
-    def outgoing_tasks(self, request):
+    def get_outgoing_tasks(self, request):
         queryset = Task.objects.filter(
             author=request.user.id,
             is_completed=False,
@@ -185,7 +185,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskGetSerializer
     )
-    def on_close_tasks(self, request):
+    def get_on_close_tasks(self, request):
         queryset = Task.objects.filter(
             author=request.user.id,
             is_completed=True,
@@ -202,7 +202,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskGetSerializer
     )
-    def urgent_tasks(self, request):
+    def get_urgent_tasks(self, request):
         queryset = Task.objects.filter(
             executors__id=request.user.id,
             is_completed=False,
@@ -220,7 +220,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(permissions.IsAuthenticated,),
         serializer_class=TaskGetSerializer
     )
-    def overdue_tasks(self, request):
+    def get_overdue_tasks(self, request):
         queryset = Task.objects.filter(
             executors__id=request.user.id,
             is_completed=False,
