@@ -7,6 +7,7 @@ from django_filters.rest_framework import (
 )
 
 from tasks.models import Task
+from users.models import Department
 
 
 User = get_user_model()
@@ -14,11 +15,15 @@ User = get_user_model()
 
 class CustomUserFilterSet(FilterSet):
 
-    department = AllValuesMultipleFilter(field_name='department')
+    department = ModelMultipleChoiceFilter(
+        field_name='department__name',
+        to_field_name='name',
+        queryset=Department.objects.all()
+    )
     role = AllValuesMultipleFilter(field_name='role')
-    tasks = ModelMultipleChoiceFilter(
-        field_name='tasks__execution_status',
-        to_field_name='execution_status',
+    execution_tasks = ModelMultipleChoiceFilter(
+        field_name='execution_tasks',
+        to_field_name='title',
         queryset=Task.objects.all()
     )
 
@@ -27,5 +32,5 @@ class CustomUserFilterSet(FilterSet):
         fields = (
             'department',
             'role',
-            'tasks'
+            'execution_tasks'
         )
