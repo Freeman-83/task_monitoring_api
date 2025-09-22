@@ -23,7 +23,7 @@ class CustomUserFilterSet(FilterSet):
     role = AllValuesMultipleFilter(field_name='role')
     execution_tasks = ModelMultipleChoiceFilter(
         field_name='execution_tasks',
-        to_field_name='title',
+        # to_field_name='title',
         queryset=Task.objects.all()
     )
 

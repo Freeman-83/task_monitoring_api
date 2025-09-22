@@ -37,7 +37,17 @@ class CustomUserViewSet(UserViewSet):
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = (permissions.IsAuthenticated,)
+        if self.action in ['update', 'partial_update', 'destroy']:
+            self.permission_classes = (permissions.IsAdminUser,)
         return super().get_permissions()
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if (self.action == 'list'
+            and not self.request.user.is_staff
+            and not self.request.user.is_director()):
+            queryset = queryset.filter(pk=self.request.user.pk)
+        return queryset
 
     @action(
         detail=True,
