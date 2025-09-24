@@ -102,7 +102,7 @@ class TaskExecutorUpdateSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'is_completed',
-            'application',
+            'executions_application',
             'executions_comment'
         )
 

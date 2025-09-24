@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 
+from djoser import utils
 from djoser.views import UserViewSet
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -32,12 +33,11 @@ class CustomUserViewSet(UserViewSet):
 
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = (permissions.IsAdminUser,)
 
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = (permissions.IsAuthenticated,)
-        if self.action in ['update', 'partial_update']:
+        if self.action in ['update', 'partial_update', 'destroy']:
             self.permission_classes = (permissions.IsAdminUser,)
         return super().get_permissions()
 
@@ -48,6 +48,13 @@ class CustomUserViewSet(UserViewSet):
             and not self.request.user.is_director()):
             queryset = queryset.filter(pk=self.request.user.pk)
         return queryset
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if request.user.is_staff:
+            utils.logout_user(self.request)
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
     @action(
