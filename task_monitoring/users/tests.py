@@ -193,4 +193,3 @@ class CustomUserTests(APITestCase):
                 response_status[1],
                 f'Статус запроса для "{response_status[0]}" не соответствует ожидаемому!'
             )
-    
