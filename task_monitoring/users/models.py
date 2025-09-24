@@ -80,7 +80,7 @@ class Department(models.Model):
 
 class CustomUser(AbstractUser):
     """Кастомная модель пользователя."""
-    
+
     username = None
     email = models.EmailField(
         _('email'),

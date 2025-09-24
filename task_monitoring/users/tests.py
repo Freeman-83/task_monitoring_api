@@ -63,7 +63,7 @@ class CustomUserTests(APITestCase):
 
 
     def test_create_user_token(self):
-        """Проверка получения токена пользователя."""
+        """Проверка получения админом токена пользователя."""
 
         url = '/api/auth/token/login/'
 
@@ -82,6 +82,6 @@ class CustomUserTests(APITestCase):
         auth_current_user = APIClient()
         auth_current_user.force_login(current_user)
 
-        response = auth_current_user.post(url, current_user_data)
+        response = CustomUserTests.auth_admin.post(url, current_user_data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)

@@ -87,7 +87,7 @@ class Task(models.Model):
         default=False,
         db_index=True
     )
-    tasks_file = models.FileField(
+    tasks_application = models.FileField(
         'Приложение к поручению',
         upload_to='uploaded/tasks_files/',
         validators=[
@@ -99,7 +99,7 @@ class Task(models.Model):
         blank=True,
         null=True
     )
-    application = models.FileField(
+    executions_application = models.FileField(
         'Приложение к исполнению',
         upload_to='uploaded/applications/',
         validators=[

@@ -69,7 +69,8 @@ class TaskAdmin(admin.ModelAdmin):
         'author',
         'assignment_date',
         'execution_date',
-        'tasks_file',
+        'tasks_application',
+        'executions_application',
         'is_closed',
         'is_completed'
     )
