@@ -465,7 +465,7 @@ class TaskTests(APITestCase):
             url_executor.format(tasks_list[-1].id)
         )
 
-        # запрос на исполнение для заместителя начальника отдела
+        # запрос на исполнение и закрытие для заместителя начальника отдела
         response_author_deputy_head_department = TaskTests.auth_deputy_head_department.patch(
             url_author.format(tasks_list[-1].id)
         )
@@ -473,7 +473,7 @@ class TaskTests(APITestCase):
             url_executor.format(tasks_list[-2].id)
         )
 
-        # запрос на исполнение для начальника отдела
+        # запрос на исполнение и закрытие для начальника отдела
         response_author_head_department = TaskTests.auth_head_department_1.patch(
             url_author.format(tasks_list[-2].id)
         )
@@ -481,7 +481,7 @@ class TaskTests(APITestCase):
             url_executor.format(tasks_list[-3].id)
         )
 
-        # запрос на исполнение для заместителя директора
+        # запрос на исполнение и закрытие для заместителя директора
         response_author_deputy_director = TaskTests.auth_deputy_director.patch(
             url_author.format(tasks_list[-3].id)
         )
@@ -489,7 +489,7 @@ class TaskTests(APITestCase):
             url_executor.format(tasks_list[-4].id)
         )
 
-        # запрос на исполнение для директора
+        # запрос на закрытие для директора
         response_director = TaskTests.auth_director.patch(
             url_author.format(tasks_list[-4].id)
         )
