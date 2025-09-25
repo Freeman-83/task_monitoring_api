@@ -429,12 +429,11 @@ class TaskTests(APITestCase):
             )
 
 
-    def test_complete_task(self):
-        """Проверка отметки исполнения поручения автором и исполнителем."""
+    def test_complete_and_close_task(self):
+        """Проверка отметки исполнения поручения исполнителем и автором."""
 
         url_executor = '/api/tasks/{}/complete_task/'
         url_author = '/api/tasks/{}/close_task/'
-
 
         users: list = [
             TaskTests.director,
