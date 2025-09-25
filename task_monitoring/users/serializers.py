@@ -105,6 +105,11 @@ class CustomUserContextSerializer(serializers.ModelSerializer):
 class DepartmentSerializer(serializers.ModelSerializer):
     """Кастомный сериализатор Подразделения."""
 
+    employees = CustomUserContextSerializer(
+        read_only=True,
+        many=True
+    )
+
     class Meta:
         model = Department
         fields = (
