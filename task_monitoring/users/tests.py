@@ -21,9 +21,6 @@ class CustomUserTests(APITestCase):
         cls.director_token = 'director_token'
         cls.head_department_token = 'head_department_token'
 
-        cls.department = Department.objects.create(
-            name='test department'
-        )
 
         cls.admin = User.objects.create(
             email='admin@mail.ru',
@@ -40,6 +37,12 @@ class CustomUserTests(APITestCase):
             last_name='Петров',
             role=ROLE_CHOICES[0][0]
         )
+
+        cls.department = Department.objects.create(
+            name='test department',
+            curator=cls.director
+        )
+
         cls.head_department = User.objects.create(
             email='head_department@mail.ru',
             first_name='Сидор',
@@ -76,7 +79,13 @@ class CustomUserTests(APITestCase):
             'department': cls.department.id
         }
 
+        cls.department_data = {
+            'name': 'test_department',
+            'curator': cls.director.id
+        }
+
         cls.create_user_url = '/api/users/'
+        cls.create_department_url = '/api/departments/'
 
 
     def test_create_user(self):
@@ -190,6 +199,85 @@ class CustomUserTests(APITestCase):
         for response_subject, response_status in tests_data.items():
             self.assertEqual(
                 response_subject.delete(current_user_url).status_code,
+                response_status[1],
+                f'Статус запроса для "{response_status[0]}" не соответствует ожидаемому!'
+            )
+    
+
+    def test_create_department(self):
+        """Проверка прав на создание нового отдела только для админа."""
+
+        tests_data = {
+            CustomUserTests.auth_director: [
+                'director', status.HTTP_403_FORBIDDEN
+            ],
+            CustomUserTests.auth_head_department: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            CustomUserTests.auth_admin: [
+                'admin', status.HTTP_201_CREATED
+            ]
+        }
+
+        for response_subject, response_status in tests_data.items():
+            self.assertEqual(
+                response_subject.post(
+                    CustomUserTests.create_department_url,
+                    data=CustomUserTests.department_data
+                ).status_code,
+                response_status[1],
+                f'Статус запроса для "{response_status[0]}" не соответствует ожидаемому!'
+            )
+
+
+    def test_update_department(self):
+        """Проверка прав на изменение данных об отделе только для админа."""
+
+        current_department_url = f'/api/departments/{CustomUserTests.department.id}/'
+
+        tests_data = {
+            CustomUserTests.auth_director: [
+                'director', status.HTTP_403_FORBIDDEN
+            ],
+            CustomUserTests.auth_head_department: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            CustomUserTests.auth_admin: [
+                'admin', status.HTTP_200_OK
+            ]
+        }
+
+        for response_subject, response_status in tests_data.items():
+            self.assertEqual(
+                response_subject.patch(
+                    current_department_url,
+                    data={'curator': CustomUserTests.head_department.id}
+                ).status_code,
+                response_status[1],
+                f'Статус запроса для "{response_status[0]}" не соответствует ожидаемому!'
+            )
+
+
+    def test_delete_department(self):
+        """Проверка прав на удаление данных об отделе только для админа."""
+
+        current_department_url = f'/api/departments/{CustomUserTests.department.id}/'
+
+        tests_data = {
+            CustomUserTests.auth_director: [
+                'director', status.HTTP_403_FORBIDDEN
+            ],
+            CustomUserTests.auth_head_department: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            CustomUserTests.auth_admin: [
+                'admin', status.HTTP_204_NO_CONTENT
+            ]
+        }
+
+        for response_subject, response_status in tests_data.items():
+            self.assertEqual(
+                response_subject.delete(current_department_url).status_code,
                 response_status[1],
                 f'Статус запроса для "{response_status[0]}" не соответствует ожидаемому!'
             )
