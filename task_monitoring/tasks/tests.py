@@ -1,5 +1,3 @@
-import json
-
 from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
@@ -242,7 +240,7 @@ class TaskTests(APITestCase):
 
         url = '/api/tasks/'
         
-        tests_data = {
+        tests_status_data = {
             TaskTests.auth_admin: [
                 'admin', status.HTTP_200_OK
             ],
@@ -266,11 +264,40 @@ class TaskTests(APITestCase):
             ]
         }
 
-        for response_subject, data in tests_data.items():
+        tests_queryset_data = {
+            TaskTests.auth_admin: [
+                'admin', self.task.id
+            ],
+            TaskTests.auth_director: [
+                'director', self.task.id
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', self.task.id
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', []
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', []
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', []
+            ]
+        }
+
+        for response_subject, data in tests_status_data.items():
             self.assertEqual(
                 response_subject.get(url).status_code,
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+
+        for response_subject, response_data in tests_queryset_data.items():
+            result = response_subject.get(url).data.get('results')
+            self.assertEqual(
+                response_subject.get(url).data.get('results')[0]['id'] if result else result,
+                response_data[1],
+                f'Результат запроса для "{response_data[0]}" не соответствует ожидаемому!'
             )
 
 
@@ -293,13 +320,13 @@ class TaskTests(APITestCase):
                 'deputy_director', status.HTTP_200_OK
             ],
             TaskTests.auth_head_department_1: [
-                'head_department', status.HTTP_404_NOT_FOUND
+                'not_executor_head_department', status.HTTP_404_NOT_FOUND
             ],
             TaskTests.auth_deputy_head_department: [
-                'deputy_head_department', status.HTTP_404_NOT_FOUND
+                'not_executor_deputy_head_department', status.HTTP_404_NOT_FOUND
             ],
             TaskTests.auth_employee_1: [
-                'employee', status.HTTP_404_NOT_FOUND
+                'not_executor_employee', status.HTTP_404_NOT_FOUND
             ],
             TaskTests.guest_client: [
                 'guest_client', status.HTTP_401_UNAUTHORIZED
@@ -339,16 +366,16 @@ class TaskTests(APITestCase):
                 'deputy_director', status.HTTP_201_CREATED
             ],
             TaskTests.auth_head_department_1: [
-                'head_department_1', status.HTTP_201_CREATED
+                'supervisor_head_department', status.HTTP_201_CREATED
             ],
             TaskTests.auth_head_department_2: [
-                'head_department_2', status.HTTP_400_BAD_REQUEST
+                'not_supervisor_head_department', status.HTTP_400_BAD_REQUEST
             ],
             TaskTests.auth_deputy_head_department: [
                 'deputy_head_department', status.HTTP_201_CREATED
             ],
             TaskTests.auth_employee_2: [
-                'employee_2', status.HTTP_403_FORBIDDEN
+                'employee', status.HTTP_403_FORBIDDEN
             ],
             TaskTests.guest_client: [
                 'guest_client', status.HTTP_401_UNAUTHORIZED
