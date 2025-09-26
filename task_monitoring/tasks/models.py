@@ -10,7 +10,7 @@ class Group(models.Model):
     """Модель типа поручения."""
 
     name = models.CharField(
-        'Ниманование типа поручения',
+        verbose_name='Наименование типа поручения',
         max_length=200
     )
 
@@ -27,11 +27,11 @@ class Task(models.Model):
     """Модель Поручения."""
     
     title = models.CharField(
-        'Заголовок',
+        verbose_name='Заголовок',
         max_length=512
     )
     number = models.CharField(
-        'Номер поручения',
+        verbose_name='Номер поручения',
         max_length=56,
         blank=True,
         null=True
@@ -52,7 +52,7 @@ class Task(models.Model):
         db_index=True
     )
     resolution = models.TextField(
-        'Резолюция',
+        verbose_name='Резолюция',
         max_length=10000
     )
     parent_task = models.ForeignKey(
@@ -65,30 +65,30 @@ class Task(models.Model):
     )
     executors = models.ManyToManyField(
         User,
-        related_name='execution_tasks',
-        verbose_name='Исполнители'
+        verbose_name='Исполнители',
+        related_name='execution_tasks'
     )
     assignment_date = models.DateField(
-        'Дата поручения',
+        verbose_name='Дата поручения',
         auto_now_add=True,
         db_index=True
     )
     execution_date = models.DateField(
-        'Дата исполнения',
+        verbose_name='Дата исполнения',
         db_index=True
     )
     is_closed = models.BooleanField(
-        'Отметка об исполнении поручения инициатором',
+        verbose_name='Отметка об исполнении поручения инициатором',
         default=False,
         db_index=True
     )
     is_completed = models.BooleanField(
-        'Отметка об исполнении поручения исполнителем',
+        verbose_name='Отметка об исполнении поручения исполнителем',
         default=False,
         db_index=True
     )
     tasks_application = models.FileField(
-        'Приложение к поручению',
+        verbose_name='Приложение к поручению',
         upload_to='uploaded/tasks_files/',
         validators=[
             FileExtensionValidator(
@@ -100,7 +100,7 @@ class Task(models.Model):
         null=True
     )
     executions_application = models.FileField(
-        'Приложение к исполнению',
+        verbose_name='Приложение к исполнению',
         upload_to='uploaded/applications/',
         validators=[
             FileExtensionValidator(
@@ -112,7 +112,7 @@ class Task(models.Model):
         null=True
     )
     executions_comment = models.TextField(
-        'Комментарий к исполнению',
+        verbose_name='Комментарий к исполнению',
         max_length=10000,
         blank=True,
         null=True

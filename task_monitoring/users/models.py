@@ -56,14 +56,14 @@ class Department(models.Model):
     """Модель Подразделения."""
 
     name = models.CharField(
-        'Наименование',
+        verbose_name='Наименование',
         max_length=1000,
         unique=True
     )
     curator = models.ForeignKey(
         'CustomUser',
+        verbose_name='Куратор',
         related_name='subordinate_departments',
-        verbose_name='Курирующий заместитель',
         on_delete=models.SET_NULL,
         blank=True,
         null=True
@@ -88,26 +88,27 @@ class CustomUser(AbstractUser):
         unique=True
     )
     first_name = models.CharField(
-        'Имя',
+        verbose_name='Имя',
         max_length=128
     )
     second_name = models.CharField(
-        'Отчество',
+        verbose_name='Отчество',
         max_length=128
     )
     last_name = models.CharField(
-        'Фамилия',
+        verbose_name='Фамилия',
         max_length=128
     )
     department = models.ForeignKey(
         Department,
-        on_delete=models.SET_NULL,
+        verbose_name='Подразделение',
         related_name='employees',
+        on_delete=models.SET_NULL,
         null=True,
         blank=True
     )
     role = models.CharField(
-        'Статус',
+        verbose_name='Статус',
         max_length=64,
         choices=ROLE_CHOICES,
         default=EMPLOYEE
