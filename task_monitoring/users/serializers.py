@@ -39,7 +39,8 @@ class RegisterUserSerializer(UserCreateSerializer):
 class CustomUserSerializer(UserSerializer):
     """Кастомный сериализатор Пользователя."""
 
-    tasks_count = serializers.SerializerMethodField()
+    initiator_tasks_count = serializers.SerializerMethodField()
+    execution_tasks_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -51,20 +52,38 @@ class CustomUserSerializer(UserSerializer):
             'last_name',
             'department',
             'role',
-            'tasks_count',
-            'initiator_tasks'
+            'initiator_tasks_count',
+            'execution_tasks_count',
+            'initiator_tasks',
+            'execution_tasks'
         )
 
-    def get_tasks_count(self, user):
-        return user.author_tasks.count()
+    def get_initiator_tasks_count(self, user):
+        return user.initiator_tasks.count()
+    
+    def get_execution_tasks_count(self, user):
+        return user.execution_tasks.count()
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         if data['department']:
             data['department'] = instance.department.name
         data['initiator_tasks'] = []
-        for task in instance.author_tasks.all():
+        for task in instance.initiator_tasks.all():
             data['initiator_tasks'].append(
+                {
+                    'group': task.group.name,
+                    'title': task.title,
+                    'number': task.number,
+                    'assignment_date': task.assignment_date,
+                    'execution_date': task.execution_date,
+                    'is_closed': task.is_closed,
+                    'is_completed': task.is_completed
+                }
+            )
+        data['execution_tasks'] = []
+        for task in instance.execution_tasks.all():
+            data['execution_tasks'].append(
                 {
                     'group': task.group.name,
                     'title': task.title,

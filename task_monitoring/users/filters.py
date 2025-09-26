@@ -21,6 +21,11 @@ class CustomUserFilterSet(FilterSet):
         queryset=Department.objects.all()
     )
     role = AllValuesMultipleFilter(field_name='role')
+    initiator_tasks = ModelMultipleChoiceFilter(
+        field_name='initiator_tasks',
+        # to_field_name='title',
+        queryset=Task.objects.all()
+    )
     execution_tasks = ModelMultipleChoiceFilter(
         field_name='execution_tasks',
         # to_field_name='title',
@@ -32,5 +37,6 @@ class CustomUserFilterSet(FilterSet):
         fields = (
             'department',
             'role',
+            'initiator_tasks',
             'execution_tasks'
         )
