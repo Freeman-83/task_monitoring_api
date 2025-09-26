@@ -56,7 +56,7 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
 class TaskCreateSerializer(serializers.ModelSerializer):
     """Сериализатор Поручения."""
 
-    author = CustomUserSerializer(
+    initiator = CustomUserSerializer(
         default=serializers.CurrentUserDefault()
     )
     executors = ExecutorsField(many=True)
@@ -70,7 +70,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             'number',
             'parent_task',
             'resolution',
-            'author',
+            'initiator',
             'executors',
             'assignment_date',
             'execution_date'
@@ -82,7 +82,7 @@ class TaskCreateSerializer(serializers.ModelSerializer):
             fields=[
                 'title',
                 'number',
-                'author',
+                'initiator',
                 'assignment_date'
             ]
         )
@@ -112,7 +112,7 @@ class TaskGetSerializer(serializers.ModelSerializer):
 
     parent_task = serializers.StringRelatedField()
     redirected_tasks = serializers.StringRelatedField(many=True)
-    author = CustomUserContextSerializer(read_only=True)
+    initiator = CustomUserContextSerializer(read_only=True)
     executors = CustomUserContextSerializer(
         read_only=True,
         many=True,
@@ -132,7 +132,7 @@ class TaskGetSerializer(serializers.ModelSerializer):
             'parent_task',
             'redirected_tasks',
             'resolution',
-            'author',
+            'initiator',
             'executors',
             'is_closed',
             'is_completed',

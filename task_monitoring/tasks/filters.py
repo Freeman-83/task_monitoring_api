@@ -21,7 +21,7 @@ User = get_user_model()
 class TaskFilterSet(FilterSet):
 
     group = AllValuesMultipleFilter(field_name='group')
-    author = ModelMultipleChoiceFilter(
+    initiator = ModelMultipleChoiceFilter(
         field_name='author__id',
         to_field_name='id',
         label='Инициатор',
@@ -49,7 +49,7 @@ class TaskFilterSet(FilterSet):
         model = Task
         fields = (
             'group',
-            'author',
+            'initiator',
             'executors',
             'assignment_date',
             'execution_date',

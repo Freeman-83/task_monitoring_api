@@ -91,7 +91,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
                 if self.action in ['update', 'partial_update', 'delete']:
                     queryset = Task.objects.filter(
-                        author=self.request.user.id
+                        initiator=self.request.user.id
                     ).select_related(
                         'group'
                     ).prefetch_related(
@@ -102,7 +102,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
                 if self.action in ['list', 'retrieve']:
                     authors_queryset = Task.objects.filter(
-                        author=self.request.user.id
+                        initiator=self.request.user.id
                     ).select_related(
                         'group'
                     ).prefetch_related(
@@ -170,7 +170,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_outgoing_tasks(self, request):
         queryset = Task.objects.filter(
-            author=request.user.id,
+            initiator=request.user.id,
             is_completed=False,
             is_closed=False
         )
@@ -187,7 +187,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_on_close_tasks(self, request):
         queryset = Task.objects.filter(
-            author=request.user.id,
+            initiator=request.user.id,
             is_completed=True,
             is_closed=False
         )
@@ -319,7 +319,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
-                author=request.user.id,
+                initiator=request.user.id,
                 is_completed=True
             )
 

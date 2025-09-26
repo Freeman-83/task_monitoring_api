@@ -52,7 +52,7 @@ class CustomUserSerializer(UserSerializer):
             'department',
             'role',
             'tasks_count',
-            'author_tasks'
+            'initiator_tasks'
         )
 
     def get_tasks_count(self, user):
@@ -62,14 +62,14 @@ class CustomUserSerializer(UserSerializer):
         data = super().to_representation(instance)
         if data['department']:
             data['department'] = instance.department.name
-        data['author_tasks'] = []
+        data['initiator_tasks'] = []
         for task in instance.author_tasks.all():
-            data['author_tasks'].append(
+            data['initiator_tasks'].append(
                 {
                     'group': task.group.name,
                     'title': task.title,
                     'number': task.number,
-                    'author': f'{task.author.last_name} {task.author.first_name}',
+                    'initiator': f'{task.initiator.last_name} {task.initiator.first_name}',
                     'assignment_date': task.assignment_date,
                     'execution_date': task.execution_date,
                     'is_closed': task.is_closed,

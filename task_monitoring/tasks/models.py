@@ -44,10 +44,10 @@ class Task(models.Model):
         null=True,
         blank=True
     )
-    author = models.ForeignKey(
+    initiator = models.ForeignKey(
         User,
         verbose_name='Инициатор',
-        related_name='author_tasks',
+        related_name='initiator_tasks',
         on_delete=models.CASCADE,
         db_index=True
     )
@@ -127,7 +127,7 @@ class Task(models.Model):
                 fields=[
                     'title',
                     'number',
-                    'author',
+                    'initiator',
                     'assignment_date',
                 ],
                 name='unique_task'
@@ -135,4 +135,4 @@ class Task(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.pk} - {self.title} - {self.author}'
+        return f'{self.pk} - {self.title} - {self.initiator}'

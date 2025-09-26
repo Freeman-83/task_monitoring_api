@@ -151,7 +151,7 @@ class TaskTests(APITestCase):
         task_data = {
             'title': 'test task 1',
             'number': '1',
-            'author': TaskTests.director,
+            'initiator': TaskTests.director,
             'group': TaskTests.group,
             'execution_date': date.today() + timedelta(days=10),
             'resolution': 'test resolution 1'
@@ -477,7 +477,7 @@ class TaskTests(APITestCase):
                 'title': f'test task {i}',
                 'number': f'{i}',
                 'group': TaskTests.group,
-                'author': users[i],
+                'initiator': users[i],
                 'execution_date': date.today() + timedelta(days=10),
                 'resolution': f'test resolution {i}',
                 'parent_task': None if i == 0 else tasks_list[i - 1]
