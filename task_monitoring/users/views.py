@@ -37,7 +37,7 @@ class CustomUserViewSet(UserViewSet):
     def get_permissions(self):
         if self.action == 'me':
             self.permission_classes = (permissions.IsAuthenticated,)
-        if self.action in ['update', 'partial_update', 'destroy']:
+        if self.action in ['update', 'partial_update']:
             self.permission_classes = (permissions.IsAdminUser,)
         return super().get_permissions()
 
