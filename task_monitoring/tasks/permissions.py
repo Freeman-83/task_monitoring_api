@@ -21,5 +21,5 @@ class IsAdminOrManagerOrReadOnly(permissions.BasePermission):
              and request.user in obj.executors.all())
             or request.user.is_staff
             or request.user.is_director()
-            or obj.author == request.user
+            or obj.initiator == request.user
         )

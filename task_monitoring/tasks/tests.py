@@ -557,3 +557,119 @@ class TaskTests(APITestCase):
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
+
+
+    def test_update_task(self):
+        """Проверка изменения поручения инициатором и админом."""
+
+        url = f'/api/tasks/{self.task.id}/'
+
+        initiator_data_for_update = {
+            'execution_date': date.today() + timedelta(days=11),
+            'resolution': 'initiator_changed test resolution'
+        }
+
+        admin_data_for_update = {
+            'execution_date': date.today() + timedelta(days=12),
+            'resolution': 'admin_changed test resolution'
+        }
+
+        tests_status_data = {
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_404_NOT_FOUND
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_404_NOT_FOUND
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_404_NOT_FOUND
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK
+            ],
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK
+            ],
+        }
+
+        for response_subject, data in tests_status_data.items():
+            changing_data = admin_data_for_update if response_subject == TaskTests.auth_admin else initiator_data_for_update
+            self.assertEqual(
+                response_subject.patch(url, data=changing_data).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+
+
+    def test_initiator_delete_task(self):
+        """Проверка удаления поручения инициатором."""
+
+        url = f'/api/tasks/{self.task.id}/'
+
+        tests_status_data = {
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_204_NO_CONTENT
+            ],
+        }
+
+        for response_subject, data in tests_status_data.items():
+            self.assertEqual(
+                response_subject.delete(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+
+
+    def test_admin_delete_task(self):
+        """Проверка удаления поручения админом."""
+
+        url = f'/api/tasks/{self.task.id}/'
+
+        tests_status_data = {
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_head_department_1: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.auth_employee_1: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ],
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_204_NO_CONTENT
+            ],
+        }
+
+        for response_subject, data in tests_status_data.items():
+            self.assertEqual(
+                response_subject.delete(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
