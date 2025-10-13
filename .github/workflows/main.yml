@@ -64,7 +64,7 @@ jobs:
         with:
           context: ./task_monitoring/
           push: true
-          tags: registry.gitlab.com/freeman-83/task_monitoring_api:latest
+          tags: registry.gitlab.com/freeman-83/task_monitoring_api
 
   build_nginx_and_push_to_gitlab_registry:
     name: Push nginx Docker image to GitLab Registry
@@ -85,7 +85,7 @@ jobs:
         with:
           context: ./nginx/
           push: true
-          tags: registry.gitlab.com/freeman-83/nginx:latest
+          tags: registry.gitlab.com/freeman-83/nginx
 
   # deploy:
   #   runs-on: ubuntu-latest
