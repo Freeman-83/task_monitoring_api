@@ -1,0 +1,131 @@
+name: Main Task-Monitoring Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  backend_tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: task_monitoring_user
+          POSTGRES_PASSWORD: task_monitoring_user_password
+          POSTGRES_DB: task_monitoring
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip 
+        pip install flake8
+        pip install -r ./task_monitoring/requirements.txt
+    - name: Test with flake8
+      env:
+        POSTGRES_USER: task_monitoring_user
+        POSTGRES_PASSWORD: task_monitoring_user_password
+        POSTGRES_DB: task_monitoring
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+      run: |
+        python -m flake8 backend/
+
+  build_backend_and_push_to_gitlab_registry:
+    name: Push backend Docker image to GitLab Registry
+    runs-on: ubuntu-latest
+    needs: backend_tests
+    
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitLab
+        uses: docker/login-action@v2
+        with:
+          registry: registry.gitlab.com
+          username: ${{ secrets.GITLAB_USERNAME }}
+          password: ${{ secrets.GITLAB_PASSWORD }}
+      - name: Push to GitLab Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./task_monitoring/
+          push: true
+          tags: registry.gitlab.com/freeman-83/task_monitoring_api:latest
+
+  # build_nginx_and_push_to_gitlab_registry:
+  #   name: Push gateway Docker image to GitLab Registry
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check out the repo
+  #       uses: actions/checkout@v3
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v2
+  #     - name: Login to GitLab 
+  #       uses: docker/login-action@v2
+  #       with:
+  #         registry: registry.gitlab.com
+  #         username: ${{ secrets.GITLAB_USERNAME }}
+  #         password: ${{ secrets.GITLAB_PASSWORD }}
+  #     - name: Push to GitLab Registry
+  #       uses: docker/build-push-action@v4
+  #       with:
+  #         context: ./nginx/
+  #         push: true
+  #         # Тут вместо username должен быть ваш логин на Docker Hub
+  #         tags: registry.gitlab.com/freeman-83/nginx
+
+  # deploy:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - build_backend_and_push_to_gitlab_registry
+  #     - build_nginx_and_push_to_gitlab_registry
+  #   steps:
+  #   - name: Checkout repo
+  #     uses: actions/checkout@v3
+  #   - name: Copy docker-compose.production.yml via ssh
+  #     uses: appleboy/scp-action@master
+  #     with:
+  #       host: ${{ secrets.HOST }}
+  #       username: ${{ secrets.USER }}
+  #       key: ${{ secrets.SSH_KEY }}
+  #       passphrase: ${{ secrets.SSH_PASSPHRASE }}
+  #       source: "docker-compose.production.yml"
+  #       target: "task_monitoring_api"
+  #   - name: Executing remote ssh commands to deploy
+  #     uses: appleboy/ssh-action@master
+  #     with:
+  #       host: ${{ secrets.HOST }}
+  #       username: ${{ secrets.USER }}
+  #       key: ${{ secrets.SSH_KEY }}
+  #       passphrase: ${{ secrets.SSH_PASSPHRASE }}
+  #       script: |
+  #         cd foodgram
+  #         sudo docker compose -f docker-compose.production.yml pull
+  #         sudo docker compose -f docker-compose.production.yml down
+  #         sudo docker compose -f docker-compose.production.yml up -d
+  #         sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+  #         sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+  #         sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /app/static/
+
+  # send_message:
+  #   runs-on: ubuntu-latest
+  #   needs: deploy
+  #   steps:
+  #   - name: Send message
+  #     uses: appleboy/telegram-action@master
+  #     with:
+  #       to: ${{ secrets.TELEGRAM_TO }}
+  #       token: ${{ secrets.TELEGRAM_TOKEN }}
+  #       message: Деплой Foodgram успешно выполнен!
