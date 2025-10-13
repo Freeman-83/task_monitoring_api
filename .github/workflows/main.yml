@@ -32,6 +32,13 @@ jobs:
         python -m pip install --upgrade pip 
         pip install -r ./task_monitoring/requirements.txt
     - name: Run Utittests
+      env:
+          DEBUG: False
+          POSTGRES_USER: task_monitoring_user
+          POSTGRES_PASSWORD: task_monitoring_user_password
+          POSTGRES_DB: task_monitoring
+          POSTGRES_HOST: db
+          POSTGRES_PORT: 5432
       run: |
         cd ./task_monitoring
         python manage.py test
