@@ -6,7 +6,7 @@ services:
             - db_volume:/var/lib/postgresql/data
 
     backend:
-        image: registry.gitlab.com/freeman-83/task_monitoring
+        image: registry.gitlab.com/freeman-83/task_monitoring_api
         environment:
             - DEBUG=False
         env_file: task_monitoring/.env
