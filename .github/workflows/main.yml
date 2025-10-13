@@ -66,27 +66,26 @@ jobs:
           push: true
           tags: registry.gitlab.com/freeman-83/task_monitoring_api:latest
 
-  # build_nginx_and_push_to_gitlab_registry:
-  #   name: Push gateway Docker image to GitLab Registry
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check out the repo
-  #       uses: actions/checkout@v3
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #     - name: Login to GitLab 
-  #       uses: docker/login-action@v2
-  #       with:
-  #         registry: registry.gitlab.com
-  #         username: ${{ secrets.GITLAB_USERNAME }}
-  #         password: ${{ secrets.GITLAB_PASSWORD }}
-  #     - name: Push to GitLab Registry
-  #       uses: docker/build-push-action@v4
-  #       with:
-  #         context: ./nginx/
-  #         push: true
-  #         # Тут вместо username должен быть ваш логин на Docker Hub
-  #         tags: registry.gitlab.com/freeman-83/nginx
+  build_nginx_and_push_to_gitlab_registry:
+    name: Push nginx Docker image to GitLab Registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to GitLab 
+        uses: docker/login-action@v2
+        with:
+          registry: registry.gitlab.com
+          username: ${{ secrets.GITLAB_USERNAME }}
+          password: ${{ secrets.GITLAB_PASSWORD }}
+      - name: Push to GitLab Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./nginx/
+          push: true
+          tags: registry.gitlab.com/freeman-83/nginx:latest
 
   # deploy:
   #   runs-on: ubuntu-latest
@@ -121,13 +120,15 @@ jobs:
   #         sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
   #         sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /app/static/
 
-  # send_message:
-  #   runs-on: ubuntu-latest
-  #   needs: deploy
-  #   steps:
-  #   - name: Send message
-  #     uses: appleboy/telegram-action@master
-  #     with:
-  #       to: ${{ secrets.TELEGRAM_TO }}
-  #       token: ${{ secrets.TELEGRAM_TOKEN }}
-  #       message: Деплой Foodgram успешно выполнен!
+  send_message:
+    runs-on: ubuntu-latest
+    needs:
+      - build_backend_and_push_to_gitlab_registry
+      - build_nginx_and_push_to_gitlab_registry
+    steps:
+    - name: Send message
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: Сборка образов Task Monitoring успешно выполнен!
