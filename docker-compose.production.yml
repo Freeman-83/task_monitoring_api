@@ -1,6 +1,6 @@
 services:
     db:
-        image: postgres:latest
+        image: postgres:17.4
         env_file: task_monitoring/.env
         volumes:
             - db_volume:/var/lib/postgresql/data
