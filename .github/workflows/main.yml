@@ -47,7 +47,6 @@ jobs:
     name: Push backend Docker image to GitLab Registry
     runs-on: ubuntu-latest
     needs: backend_tests
-    
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
@@ -71,7 +70,6 @@ jobs:
   #   runs-on: ubuntu-latest
   #   needs:
   #     - build_backend_and_push_to_gitlab_registry
-  #     - build_nginx_and_push_to_gitlab_registry
   #   steps:
   #   - name: Checkout repo
   #     uses: actions/checkout@v3
