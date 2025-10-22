@@ -11,7 +11,7 @@ services:
             - DEBUG=False
         env_file: task_monitoring/.env
         volumes:
-            - static_volume:/app/collected_static
+            - static_volume:/app/static
             - upload_volume:/app/uploaded
         depends_on:
             - db
