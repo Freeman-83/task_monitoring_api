@@ -188,7 +188,7 @@ STATIC_ROOT = BASE_DIR / 'collected_static'
 #    os.path.join(BASE_DIR, 'static'),
 # ]
 
-MEDIA_URL = '/media/'
+# MEDIA_URL = '/media/'
 
 UPLOADED_ROOT = BASE_DIR / 'uploaded'
 
