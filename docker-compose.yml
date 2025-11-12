@@ -7,8 +7,6 @@ services:
 
     backend:
         build: ./task_monitoring
-        environment:
-            - DEBUG=False
         env_file: task_monitoring/.env
         volumes:
             - static_volume:/app/collected_static
