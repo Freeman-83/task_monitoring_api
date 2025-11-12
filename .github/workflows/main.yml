@@ -34,9 +34,9 @@ jobs:
     - name: Run Unittests
       env:
           DEBUG: False
+          POSTGRES_DB: task_monitoring
           POSTGRES_USER: task_monitoring_user
           POSTGRES_PASSWORD: task_monitoring_user_password
-          POSTGRES_DB: task_monitoring
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_PORT: 5432
       run: |
