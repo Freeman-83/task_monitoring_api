@@ -14,4 +14,4 @@ RUN python manage.py collectstatic
 
 EXPOSE 8000
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--timeout", "600", "task_monitoring.wsgi"]
+CMD ["gunicorn", "--bind", "0.0.0.0:9000", "--timeout", "600", "task_monitoring.wsgi"]
