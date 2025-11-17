@@ -2,7 +2,6 @@ from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.forms.models import model_to_dict
 from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend

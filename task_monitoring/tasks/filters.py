@@ -1,6 +1,3 @@
-from datetime import date
-
-from django.conf import settings
 from django.contrib.auth import get_user_model
 
 from django_filters.rest_framework import (
@@ -8,7 +5,6 @@ from django_filters.rest_framework import (
     BooleanFilter,
     ModelMultipleChoiceFilter,
     AllValuesMultipleFilter,
-    DateFilter,
     DateFromToRangeFilter
 )
 
