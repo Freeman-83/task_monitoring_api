@@ -61,6 +61,10 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
 class TaskCreateSerializer(serializers.ModelSerializer):
     """Сериализатор Поручения."""
 
+    # initiator = serializers.PrimaryKeyRelatedField(
+    #     default=serializers.CurrentUserDefault
+    # )
+
     executors = ExecutorsField(many=True)
 
     class Meta:

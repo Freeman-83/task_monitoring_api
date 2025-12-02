@@ -77,18 +77,18 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_class = TaskFilterSet
     ordering_fields = ('execution_date',)
 
-    def create(self, request, *args, **kwargs):
-        initiator = get_object_or_404(Employee, pk=request.user.employee.id)
-        request.data['initiator'] = initiator.id
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # def create(self, request, *args, **kwargs):
+    #     data = request.data.copy()
+    #     data['initiator'] = request.user.employee.id
+    #     serializer = self.get_serializer(data=data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        current_employee = self.request.user.employee
-        if not self.request.user.is_staff and not current_employee.is_director():
+        if not self.request.user.is_staff and not self.request.user.employee.is_director():
 
+            current_employee = self.request.user.employee
             if (current_employee.is_deputy_director()
                 or current_employee.is_head_department()
                 or current_employee.is_deputy_head_department()):

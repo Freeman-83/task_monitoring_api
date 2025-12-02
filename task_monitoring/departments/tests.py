@@ -22,7 +22,7 @@ class EmployeeTests(APITestCase):
         cls.head_department_token = 'head_department_token'
 
 
-        cls.admin = User.objects.create(
+        cls.admin_user = User.objects.create(
             email='admin@mail.ru',
             first_name='Админ',
             second_name='Админыч',
@@ -35,7 +35,12 @@ class EmployeeTests(APITestCase):
             second_name='Петрович',
             last_name='Петров'
         )
-
+        cls.deputy_director_user = User.objects.create(
+            email='deputy_director@mail.ru',
+            first_name='Иван',
+            second_name='Иванович',
+            last_name='Иванов'
+        )
         cls.head_department_user = User.objects.create(
             email='head_department@mail.ru',
             first_name='Сидор',
@@ -48,9 +53,10 @@ class EmployeeTests(APITestCase):
         cls.auth_director = APIClient()
         cls.auth_head_department = APIClient()
 
+
         cls.auth_admin.force_authenticate(
-            cls.admin,
-            token=cls.admin_token
+            cls.admin_user,
+            cls.admin_token
         )
         cls.auth_director.force_authenticate(
             cls.director_user,
@@ -70,32 +76,31 @@ class EmployeeTests(APITestCase):
             name='test department',
             curator=cls.director_employee
         )
+        cls.admin_employee = Employee.objects.create(
+            user=cls.admin_user,
+            department=cls.department,
+            role=ROLE_CHOICES[4][0]
+        )
         cls.head_department_employee = Employee.objects.create(
             user=cls.head_department_user,
             department=cls.department,
             role=ROLE_CHOICES[2][0]
         )
 
-
         cls.employee_data = {
-            'user': cls.director_user.id,
-            'role': ROLE_CHOICES[0][0]
-        }
-        cls.department_data = {
-            'name': 'test_department',
-            'curator': cls.director_employee.id
+            'user': cls.deputy_director_user.id,
+            'role': ROLE_CHOICES[1][0]
         }
 
-
-        cls.create_employee_url = '/api/employees/'
-        cls.create_department_url = '/api/departments/'
+        cls.employee_url = '/api/employees/'
+        cls.department_url = '/api/departments/'
 
 
     def test_create_employee(self):
         """Проверка создания сотрудника Админом."""
 
         response = EmployeeTests.auth_admin.post(
-            EmployeeTests.create_user_url,
+            EmployeeTests.employee_url,
             EmployeeTests.employee_data
         )
 
@@ -105,7 +110,7 @@ class EmployeeTests(APITestCase):
     def test_get_current_employee(self):
         """Проверка прав на просмотр профиля сотрудника."""
 
-        current_user_url = f'/api/employees/{EmployeeTests.head_department_employee.id}/'
+        current_user_url = f'{EmployeeTests.employee_url}{EmployeeTests.head_department_employee.id}/'
 
         tests_data = {
             EmployeeTests.auth_head_department: [
@@ -127,10 +132,10 @@ class EmployeeTests(APITestCase):
             )
 
 
-    def test_partial_update_current_user(self):
+    def test_partial_update_current_employee(self):
         """Проверка прав на изменение профиля сотрудника."""
 
-        current_user_url = f'/api/employees/{EmployeeTests.head_department_employee.id}/'
+        current_user_url = f'{EmployeeTests.employee_url}{EmployeeTests.head_department_employee.id}/'
 
         changes_data = {'role': ROLE_CHOICES[1][0]}
 
@@ -154,10 +159,10 @@ class EmployeeTests(APITestCase):
             )
 
 
-    def test_delete_current_user(self):
+    def test_delete_current_employee(self):
         """Проверка прав на удаление профиля сотрудника."""
 
-        current_user_url = f'/api/employees/{EmployeeTests.head_department_employee.id}/'
+        current_user_url = f'{EmployeeTests.employee_url}{EmployeeTests.head_department_employee.id}/'
 
         tests_data = {
             EmployeeTests.auth_director: [
@@ -182,6 +187,11 @@ class EmployeeTests(APITestCase):
     def test_create_department(self):
         """Проверка прав на создание нового отдела только для админа."""
 
+        self.department_data = {
+            'name': 'test_department',
+            'curator': EmployeeTests.director_employee.id
+        }
+
         tests_data = {
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
@@ -197,8 +207,8 @@ class EmployeeTests(APITestCase):
         for response_subject, response_status in tests_data.items():
             self.assertEqual(
                 response_subject.post(
-                    EmployeeTests.create_department_url,
-                    data=EmployeeTests.department_data
+                    EmployeeTests.department_url,
+                    data=self.department_data
                 ).status_code,
                 response_status[1],
                 f'Статус запроса для "{response_status[0]}" не соответствует ожидаемому!'

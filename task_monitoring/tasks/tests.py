@@ -35,7 +35,7 @@ class TaskTests(APITestCase):
             name='test department_2'
         )
 
-        cls.admin = User.objects.create(
+        cls.admin_user = User.objects.create(
             email='admin@mail.ru',
             first_name='Админ',
             second_name='Админыч',
@@ -96,7 +96,7 @@ class TaskTests(APITestCase):
         cls.auth_employee_2 = APIClient()
 
         cls.auth_admin.force_authenticate(
-            cls.admin,
+            cls.admin_user,
             admin_token
         )
         cls.auth_director.force_authenticate(
@@ -128,6 +128,11 @@ class TaskTests(APITestCase):
             employee_token_2
         )
 
+        cls.admin_employee = Employee.objects.create(
+            user=cls.admin_user,
+            department=cls.department_1,
+            role=ROLE_CHOICES[4][0]
+        )
         cls.director_employee = Employee.objects.create(
             user=cls.director_user,
             role=ROLE_CHOICES[0][0]
@@ -138,16 +143,17 @@ class TaskTests(APITestCase):
         )
         cls.head_department_1_employee = Employee.objects.create(
             user=cls.head_department_1_user,
-            role=ROLE_CHOICES[2][0],
-            department=cls.department_1
+            department=cls.department_1,
+            role=ROLE_CHOICES[2][0]
         )
         cls.head_department_2_employee = Employee.objects.create(
             user=cls.head_department_2_user,
-            role=ROLE_CHOICES[2][0],
-            department=cls.department_1
+            department=cls.department_2,
+            role=ROLE_CHOICES[2][0]
         )
         cls.deputy_head_department_employee = Employee.objects.create(
             user=cls.deputy_head_department_user,
+            department=cls.department_1,
             role=ROLE_CHOICES[3][0]
         )
         cls.employee_1 = Employee.objects.create(
@@ -373,7 +379,7 @@ class TaskTests(APITestCase):
             'group': self.group.id,
             'execution_date': date.today() + timedelta(days=10),
             'resolution': 'test resolution 2',
-            'executors': [TaskTests.employee_1.id]
+            'executors': [TaskTests.employee_1.id,]
         }
 
         tests_data = {
@@ -419,14 +425,14 @@ class TaskTests(APITestCase):
 
         response_executor_deputy_director = TaskTests.auth_deputy_director.post(
             url.format(self.task.id),
-            {'executors': [TaskTests.head_department_1.id,],
+            {'executors': [TaskTests.head_department_1_employee.id,],
              'resolution': 'redirected_resolution',
              'execution_date': self.task.execution_date - timedelta(days=1)},
              content_type='application/json'
         )
         response_executor_head_department_1 = TaskTests.auth_head_department_1.post(
             url.format(response_executor_deputy_director.data['id']),
-            {'executors': [TaskTests.deputy_head_department.id,],
+            {'executors': [TaskTests.deputy_head_department_employee.id,],
              'resolution': 'redirected_resolution',
              'execution_date': date(*map(int, response_executor_deputy_director.data['execution_date'].split('-'))) - timedelta(days=1)},
              content_type='application/json'
@@ -484,10 +490,10 @@ class TaskTests(APITestCase):
         url_author = '/api/tasks/{}/close_task/'
 
         users: list = [
-            TaskTests.director,
-            TaskTests.deputy_director,
-            TaskTests.head_department_1,
-            TaskTests.deputy_head_department,
+            TaskTests.director_employee,
+            TaskTests.deputy_director_employee,
+            TaskTests.head_department_1_employee,
+            TaskTests.deputy_head_department_employee,
             TaskTests.employee_1
         ]
 

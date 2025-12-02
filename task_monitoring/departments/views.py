@@ -10,6 +10,8 @@ from departments.serializers import (
     DepartmentSerializer
 )
 
+from departments.permissions import IsAdminOrDirectorOrCurrentUser
+
 
 @extend_schema(tags=['Подразделения'])
 @extend_schema_view(
@@ -42,7 +44,15 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     queryset = Employee.objects.select_related('user', 'department').all()
     serializer_class = EmployeeCreateSerializer
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAdminOrDirectorOrCurrentUser,)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if (self.action == 'list'
+            and not self.request.user.is_staff
+            and not self.request.user.employee.is_director()):
+            queryset = queryset.filter(pk=self.request.user.employee.id)
+        return queryset
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
