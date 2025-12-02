@@ -8,28 +8,24 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from rest_framework.decorators import action
-from rest_framework.response import Response
-
 from rest_framework import (
     filters,
     permissions,
     status,
     viewsets
 )
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
+from tasks.filters import TaskFilterSet
 from tasks.models import Group, Task
-
+from tasks.permissions import IsAdminOrManagerOrReadOnly
 from tasks.serializers import (
     GroupSerializer,
     TaskCreateSerializer,
     TaskGetSerializer,
     TaskExecutorUpdateSerializer
 )
-
-from tasks.filters import TaskFilterSet
-
-from tasks.permissions import IsAdminOrManagerOrReadOnly
 
 from users.models import ROLE_CHOICES
 
