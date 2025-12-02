@@ -31,7 +31,7 @@ class Department(models.Model):
         unique=True
     )
     curator = models.ForeignKey(
-        User,
+        'Employee',
         verbose_name='Куратор',
         related_name='subordinate_departments',
         on_delete=models.SET_NULL,

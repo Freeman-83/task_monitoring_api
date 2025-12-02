@@ -42,8 +42,7 @@ class CustomUserViewSet(UserViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         if (self.action == 'list'
-            and not self.request.user.is_staff
-            and not self.request.user.is_director()):
+            and not self.request.user.is_staff):
             queryset = queryset.filter(pk=self.request.user.pk)
         return queryset
     

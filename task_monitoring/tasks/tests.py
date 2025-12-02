@@ -5,8 +5,8 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
+from departments.models import Employee, Department, ROLE_CHOICES
 from tasks.models import Task, Group
-from users.models import Department, ROLE_CHOICES
 
 
 User = get_user_model()
@@ -40,64 +40,50 @@ class TaskTests(APITestCase):
             first_name='Админ',
             second_name='Админыч',
             last_name='Админов',
-            role=ROLE_CHOICES[5][0],
             is_staff=True
         )
-        cls.director = User.objects.create(
+        cls.director_user = User.objects.create(
             email='director@mail.ru',
             first_name='Иван',
             second_name='Иванович',
             last_name='Иванов',
-            role=ROLE_CHOICES[0][0]
         )
-        cls.deputy_director = User.objects.create(
+        cls.deputy_director_user = User.objects.create(
             email='deputy_director@mail.ru',
             first_name='Петр',
             second_name='Петрович',
-            last_name='Петров',
-            role=ROLE_CHOICES[1][0]
+            last_name='Петров'
         )
-        cls.head_department_1 = User.objects.create(
+        cls.head_department_1_user = User.objects.create(
             email='head_department1@mail.ru',
             first_name='Сидор',
             second_name='Сидорович',
-            last_name='Сидоров',
-            role=ROLE_CHOICES[2][0],
-            department=cls.department_1
+            last_name='Сидоров'
         )
-        cls.head_department_2 = User.objects.create(
+        cls.head_department_2_user = User.objects.create(
             email='head_department2@mail.ru',
             first_name='Александр',
             second_name='Александрович',
-            last_name='Александров',
-            role=ROLE_CHOICES[2][0],
-            department=cls.department_2
+            last_name='Александров'
         )
-        cls.deputy_head_department = User.objects.create(
+        cls.deputy_head_department_user = User.objects.create(
             email='deputy_head_department@mail.ru',
             first_name='Глеб',
             second_name='Глебович',
-            last_name='Глебов',
-            role=ROLE_CHOICES[3][0],
-            department=cls.department_1
+            last_name='Глебов'
         )
-        cls.employee_1 = User.objects.create(
+        cls.employee_1_user = User.objects.create(
             email='employee1@mail.ru',
             first_name='Борис',
             second_name='Борисович',
-            last_name='Борисов',
-            department=cls.department_1
+            last_name='Борисов'
         )
-        cls.employee_2 = User.objects.create(
+        cls.employee_2_user = User.objects.create(
             email='employee2@mail.ru',
             first_name='Антон',
             second_name='Антонович',
-            last_name='Антонов',
-            department=cls.department_2
+            last_name='Антонов'
         )
-
-        cls.department_1.curator = cls.director
-        cls.department_2.curator = cls.deputy_director
 
         cls.guest_client = APIClient()
         cls.auth_admin = APIClient()
@@ -114,33 +100,68 @@ class TaskTests(APITestCase):
             admin_token
         )
         cls.auth_director.force_authenticate(
-            cls.director,
+            cls.director_user,
             director_token
         )
         cls.auth_deputy_director.force_authenticate(
-            cls.deputy_director,
+            cls.deputy_director_user,
             deputy_director_token
         )
         cls.auth_head_department_1.force_authenticate(
-            cls.head_department_1,
+            cls.head_department_1_user,
             head_department_token_1
         )
         cls.auth_head_department_2.force_authenticate(
-            cls.head_department_2,
+            cls.head_department_2_user,
             head_department_token_2
         )
         cls.auth_deputy_head_department.force_authenticate(
-            cls.deputy_head_department,
+            cls.deputy_head_department_user,
             deputy_head_department_token
         )
         cls.auth_employee_1.force_authenticate(
-            cls.employee_1,
+            cls.employee_1_user,
             employee_token_1
         )
         cls.auth_employee_2.force_authenticate(
-            cls.employee_2,
+            cls.employee_2_user,
             employee_token_2
         )
+
+        cls.director_employee = Employee.objects.create(
+            user=cls.director_user,
+            role=ROLE_CHOICES[0][0]
+        )
+        cls.deputy_director_employee = Employee.objects.create(
+            user=cls.deputy_director_user,
+            role=ROLE_CHOICES[1][0]
+        )
+        cls.head_department_1_employee = Employee.objects.create(
+            user=cls.head_department_1_user,
+            role=ROLE_CHOICES[2][0],
+            department=cls.department_1
+        )
+        cls.head_department_2_employee = Employee.objects.create(
+            user=cls.head_department_2_user,
+            role=ROLE_CHOICES[2][0],
+            department=cls.department_1
+        )
+        cls.deputy_head_department_employee = Employee.objects.create(
+            user=cls.deputy_head_department_user,
+            role=ROLE_CHOICES[3][0]
+        )
+        cls.employee_1 = Employee.objects.create(
+            user=cls.employee_1_user,
+            department=cls.department_1
+        )
+        cls.employee_2 = Employee.objects.create(
+            user=cls.employee_2_user,
+            department=cls.department_2
+        )
+
+        cls.department_1.curator = cls.director_employee
+        cls.department_2.curator = cls.deputy_director_employee
+        
         cls.group = Group.objects.create(
             name='test group 1'
         )
@@ -151,13 +172,13 @@ class TaskTests(APITestCase):
         task_data = {
             'title': 'test task 1',
             'number': '1',
-            'initiator': TaskTests.director,
+            'initiator': TaskTests.director_employee,
             'group': TaskTests.group,
             'execution_date': date.today() + timedelta(days=10),
             'resolution': 'test resolution 1'
         }
         self.task = Task.objects.create(**task_data)
-        self.task.executors.set([TaskTests.deputy_director,])
+        self.task.executors.set([TaskTests.deputy_director_employee,])
 
 
     def test_get_groups(self):

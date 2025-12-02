@@ -4,7 +4,11 @@ from rest_framework import permissions, viewsets
 
 from departments.models import Employee, Department
 
-from departments.serializers import EmployeeCreateSerializer, EmployeeGetSerializer, DepartmentSerializer
+from departments.serializers import (
+    EmployeeCreateSerializer,
+    EmployeeGetSerializer,
+    DepartmentSerializer
+)
 
 
 @extend_schema(tags=['Подразделения'])
@@ -36,7 +40,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 class EmployeeViewSet(viewsets.ModelViewSet):
     """Вьюсет Сотрудника организации."""
 
-    queryset = Employee.objects.all()
+    queryset = Employee.objects.select_related('user', 'department').all()
     serializer_class = EmployeeCreateSerializer
     permission_classes = (permissions.IsAdminUser,)
 

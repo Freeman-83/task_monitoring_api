@@ -32,7 +32,7 @@ class EmployeeGetSerializer(serializers.ModelSerializer):
             'initiator_tasks',
             'execution_tasks',
             'initiator_tasks_count',
-            'execution_tasks_count',
+            'execution_tasks_count'
         )
 
     def get_initiator_tasks_count(self, employee):

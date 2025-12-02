@@ -8,7 +8,7 @@ class IsAdminOrManagerOrReadOnly(permissions.BasePermission):
             (request.method in permissions.SAFE_METHODS
              and request.user.is_authenticated)
             or request.user.is_authenticated
-            and (request.user.employee.is_admin()
+            and (request.user.is_staff
                  or request.user.employee.is_director()
                  or request.user.employee.is_deputy_director()
                  or request.user.employee.is_head_department()
@@ -19,7 +19,7 @@ class IsAdminOrManagerOrReadOnly(permissions.BasePermission):
         return (
             (request.method in permissions.SAFE_METHODS
              and request.user.employee in obj.executors.all())
-            or request.user.employee.is_admin()
+            or request.user.is_staff
             or request.user.employee.is_director()
             or obj.initiator == request.user.employee
         )

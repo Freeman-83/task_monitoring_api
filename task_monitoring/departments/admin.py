@@ -1,10 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 
 from departments.models import Employee, Department
-
-
-User = get_user_model()
 
 
 @admin.register(Department)
@@ -20,8 +16,9 @@ class DepartmentAdmin(admin.ModelAdmin):
 
 
 @admin.register(Employee)
-class CustomUserAdmin(admin.ModelAdmin):
+class EmployeeAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'user',
         'department',
         'role'

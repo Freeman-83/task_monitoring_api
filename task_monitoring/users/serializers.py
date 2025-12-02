@@ -35,9 +35,6 @@ class RegisterUserSerializer(UserCreateSerializer):
 class CustomUserSerializer(UserSerializer):
     """Кастомный сериализатор Пользователя."""
 
-    initiator_tasks_count = serializers.SerializerMethodField()
-    execution_tasks_count = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = (
