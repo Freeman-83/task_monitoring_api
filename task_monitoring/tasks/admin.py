@@ -3,7 +3,7 @@ from datetime import date
 from django.conf import settings
 from django.contrib import admin
 
-from .models import Group, Task
+from tasks.models import Group, Task
 
 
 class StatusListFilter(admin.SimpleListFilter):
@@ -93,4 +93,4 @@ class TaskAdmin(admin.ModelAdmin):
     list_display_links = ('title',)
     empty_value_display = '---'
 
-    # inlines = [RedirectedTasksAdmin,]
+    inlines = [RedirectedTasksAdmin,]

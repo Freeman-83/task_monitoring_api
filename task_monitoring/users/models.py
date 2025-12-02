@@ -1,25 +1,8 @@
 from django.apps import apps
-from django.contrib.auth.models import AbstractUser, UserManager
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
-
-DIRECTOR = 'Директор'
-DEPUTY_DIRECTOR = 'Заместитель директора'
-HEAD_DEPARTMENT = 'Начальник отдела'
-DEPUTY_HEAD_DEPARTMENT = 'Заместитель начальника отдела'
-EMPLOYEE = 'Сотрудник отдела'
-ADMIN = 'Администратор'
-
-ROLE_CHOICES = [
-    (DIRECTOR, 'Директор'),
-    (DEPUTY_DIRECTOR, 'Заместитель директора'),
-    (HEAD_DEPARTMENT, 'Начальник отдела'),
-    (DEPUTY_HEAD_DEPARTMENT, 'Заместитель начальника отдела'),
-    (EMPLOYEE, 'Сотрудник отдела'),
-    (ADMIN, 'Администратор')
-]
 
 
 class CustomUserManager(UserManager):
@@ -50,32 +33,6 @@ class CustomUserManager(UserManager):
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self._create_user(email, password, **extra_fields)
-    
-
-class Department(models.Model):
-    """Модель Подразделения."""
-
-    name = models.CharField(
-        verbose_name='Наименование',
-        max_length=1000,
-        unique=True
-    )
-    curator = models.ForeignKey(
-        'CustomUser',
-        verbose_name='Куратор',
-        related_name='subordinate_departments',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-
-    class Meta:
-        ordering = ['name']
-        verbose_name = 'Подразделение'
-        verbose_name_plural = 'Подразделения'
-
-    def __str__(self):
-        return f'{self.name}'
 
 
 class CustomUser(AbstractUser):
@@ -99,20 +56,6 @@ class CustomUser(AbstractUser):
         verbose_name='Фамилия',
         max_length=128
     )
-    department = models.ForeignKey(
-        Department,
-        verbose_name='Подразделение',
-        related_name='employees',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
-    role = models.CharField(
-        verbose_name='Статус',
-        max_length=64,
-        choices=ROLE_CHOICES,
-        default=EMPLOYEE
-    )
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['password']
@@ -133,25 +76,6 @@ class CustomUser(AbstractUser):
                 name='unique_user'
             ),
         ]
-
-    def is_director(self):
-        return self.role == 'Директор'
-    
-    def is_deputy_director(self):
-        return self.role == 'Заместитель директора'
-    
-    def is_head_department(self):
-        return self.role == 'Начальник отдела'
-
-    def is_deputy_head_department(self):
-        return self.role == 'Заместитель начальника отдела'
-    
-    def is_employee(self):
-        return self.role == 'Сотрудник отдела'
-    
-    def is_admin(self):
-        return self.is_staff or self.role == 'Администратор'
-
 
     def __str__(self):
         return f'{self.last_name} {self.first_name}'

@@ -1,9 +1,7 @@
-from django.db import models
-from django.contrib.auth import get_user_model
 from django.core.validators import FileExtensionValidator
+from django.db import models
 
-
-User = get_user_model()
+from departments.models import Employee
 
 
 class Group(models.Model):
@@ -45,7 +43,7 @@ class Task(models.Model):
         blank=True
     )
     initiator = models.ForeignKey(
-        User,
+        Employee,
         verbose_name='Инициатор',
         related_name='initiator_tasks',
         on_delete=models.CASCADE,
@@ -64,7 +62,7 @@ class Task(models.Model):
         null=True
     )
     executors = models.ManyToManyField(
-        User,
+        Employee,
         verbose_name='Исполнители',
         related_name='execution_tasks'
     )

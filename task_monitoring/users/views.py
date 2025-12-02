@@ -5,15 +5,13 @@ from djoser.views import UserViewSet
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
-from rest_framework import permissions, viewsets, status
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from rest_framework.authtoken.models import Token
 
-from users.models import Department
-
-from users.serializers import CustomUserSerializer, DepartmentSerializer
+from users.serializers import CustomUserSerializer
 
 
 User = get_user_model()
@@ -65,20 +63,3 @@ class CustomUserViewSet(UserViewSet):
         current_user = self.queryset.get(pk=id)
         token = Token.objects.get(user=current_user)
         return Response({'Authorization': f'Token {token}'}, status=status.HTTP_200_OK)
-
-
-@extend_schema(tags=['Подразделения'])
-@extend_schema_view(
-    list=extend_schema(summary='Получение списка подразделений'),
-    create=extend_schema(summary='Создание нового подразделения'),
-    retrieve=extend_schema(summary='Получение данных подразделения'),
-    update=extend_schema(summary='Изменение данных подразделения'),
-    partial_update=extend_schema(summary='Частичное изменение данных данных подразделения'),
-    destroy=extend_schema(summary='Удаление данных подразделения'),
-)
-class DepartmentViewSet(viewsets.ModelViewSet):
-    """Вьюсет Подразделения."""
-
-    queryset = Department.objects.all()
-    serializer_class = DepartmentSerializer
-    permission_classes = (permissions.IsAdminUser,)

@@ -2,17 +2,22 @@ from datetime import date
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from django.forms.models import model_to_dict
 
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from tasks.models import Task, Group
 
-from users.models import ROLE_CHOICES
-from users.serializers import CustomUserSerializer, CustomUserContextSerializer
-
-
-User = get_user_model()
+from departments.models import Employee, ROLE_CHOICES
+from departments.serializers import (
+    EmployeeCreateSerializer,
+    EmployeeGetSerializer,
+    EmployeeContextSerializer,
+    DepartmentSerializer
+)
+# from users.serializers import CustomUserSerializer, CustomUserContextSerializer
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -32,33 +37,30 @@ class ExecutorsField(serializers.PrimaryKeyRelatedField):
 
     def get_queryset(self):
         request_user = self.context['request'].user
-        if request_user.is_deputy_director():
-            return User.objects.exclude(
-                pk=request_user.id,
+        if request_user.employee.is_director():
+            return Employee.objects.exclude(
+                pk=request_user.employee.id,
                 role=ROLE_CHOICES[0][0]
             )
-        elif request_user.is_head_department():
-            return User.objects.filter(
-                department=request_user.department
+        elif request_user.employee.is_head_department():
+            return Employee.objects.filter(
+                department=request_user.employee.department
             ).exclude(
-                pk=request_user.id
+                pk=request_user.employee.id
             )
-        elif request_user.is_deputy_head_department():
-            return User.objects.filter(
-                department=request_user.department,
+        elif request_user.employee.is_deputy_head_department():
+            return Employee.objects.filter(
+                department=request_user.employee.department,
                 role=ROLE_CHOICES[4][0]
             ).exclude(
-                pk=request_user.id
+                pk=request_user.employee.id
             )
-        return User.objects.all()
+        return Employee.objects.all()
 
 
 class TaskCreateSerializer(serializers.ModelSerializer):
     """Сериализатор Поручения."""
 
-    initiator = CustomUserSerializer(
-        default=serializers.CurrentUserDefault()
-    )
     executors = ExecutorsField(many=True)
 
     class Meta:
@@ -112,8 +114,8 @@ class TaskGetSerializer(serializers.ModelSerializer):
 
     parent_task = serializers.StringRelatedField()
     redirected_tasks = serializers.StringRelatedField(many=True)
-    initiator = CustomUserContextSerializer(read_only=True)
-    executors = CustomUserContextSerializer(
+    initiator = EmployeeContextSerializer(read_only=True)
+    executors = EmployeeContextSerializer(
         read_only=True,
         many=True,
     )

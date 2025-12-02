@@ -27,7 +27,7 @@ from tasks.serializers import (
     TaskExecutorUpdateSerializer
 )
 
-from users.models import ROLE_CHOICES
+from departments.models import Employee, ROLE_CHOICES
 
 
 User = get_user_model()
@@ -77,16 +77,25 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_class = TaskFilterSet
     ordering_fields = ('execution_date',)
 
-    def get_queryset(self):
-        if not self.request.user.is_staff and not self.request.user.is_director():
+    def create(self, request, *args, **kwargs):
+        initiator = get_object_or_404(Employee, pk=request.user.id)
+        request.data['initiator'] = initiator.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            if (self.request.user.is_deputy_director()
-                or self.request.user.is_head_department()
-                or self.request.user.is_deputy_head_department()):
+    def get_queryset(self):
+        current_employee = self.request.user.employee
+        if not current_employee.is_admin() and not current_employee.is_director():
+
+            if (current_employee.is_deputy_director()
+                or current_employee.is_head_department()
+                or current_employee.is_deputy_head_department()):
 
                 if self.action in ['update', 'partial_update', 'delete']:
                     queryset = Task.objects.filter(
-                        initiator=self.request.user.id
+                        initiator=current_employee.id
                     ).select_related(
                         'group'
                     ).prefetch_related(
@@ -97,7 +106,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
                 if self.action in ['list', 'retrieve']:
                     authors_queryset = Task.objects.filter(
-                        initiator=self.request.user.id
+                        initiator=current_employee.id
                     ).select_related(
                         'group'
                     ).prefetch_related(
@@ -107,7 +116,7 @@ class TaskViewSet(viewsets.ModelViewSet):
                     ).all()
 
                     executors_queryset = Task.objects.filter(
-                        executors__id=self.request.user.id
+                        executors__id=current_employee.id
                     ).select_related(
                         'group'
                     ).prefetch_related(
@@ -122,7 +131,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
             else:
                 executors_queryset = Task.objects.filter(
-                    executors__id=self.request.user.id
+                    executors__id=current_employee.id
                 ).select_related(
                     'group'
                 ).prefetch_related(
@@ -149,7 +158,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_on_execution_tasks(self, request):
         queryset = Task.objects.filter(
-            executors__id=request.user.id,
+            executors__id=request.user.employee.id,
             is_completed=False
         )
         tasks = self.paginate_queryset(queryset)
@@ -165,7 +174,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_outgoing_tasks(self, request):
         queryset = Task.objects.filter(
-            initiator=request.user.id,
+            initiator=request.user.employee.id,
             is_completed=False,
             is_closed=False
         )
@@ -182,7 +191,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_on_close_tasks(self, request):
         queryset = Task.objects.filter(
-            initiator=request.user.id,
+            initiator=request.user.employee.id,
             is_completed=True,
             is_closed=False
         )
@@ -199,7 +208,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_urgent_tasks(self, request):
         queryset = Task.objects.filter(
-            executors__id=request.user.id,
+            executors__id=request.user.employee.id,
             is_completed=False,
             execution_date__gte=date.today(),
             execution_date__lte=date.today() + settings.URGENT_EXECUTION_PERIOD
@@ -217,7 +226,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     )
     def get_overdue_tasks(self, request):
         queryset = Task.objects.filter(
-            executors__id=request.user.id,
+            executors__id=request.user.employee.id,
             is_completed=False,
             execution_date__lt=date.today()
         )
@@ -233,13 +242,14 @@ class TaskViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAdminOrManagerOrReadOnly,)
     )
     def redirect_task(self, request, pk):
-        if request.user.is_staff or request.user.is_director():
+        current_employee = request.user
+        if current_employee.is_staff or current_employee.is_director():
             current_task = get_object_or_404(Task, pk=pk)
         else:
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
-                executors__id=request.user.id,
+                executors__id=current_employee.id,
                 is_closed=False,
                 execution_date__gt=date.today() + settings.URGENT_EXECUTION_PERIOD
             )
@@ -268,7 +278,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer_class=TaskExecutorUpdateSerializer
     )
     def complete_task(self, request, pk):
-        if request.user.is_staff or request.user.is_director():
+        current_employee = request.user
+        if current_employee.is_staff or current_employee.is_director():
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
@@ -278,7 +289,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
-                executors__id=request.user.id,
+                executors__id=current_employee.id,
                 is_completed=False
             )
 
@@ -308,13 +319,14 @@ class TaskViewSet(viewsets.ModelViewSet):
         serializer_class=TaskGetSerializer
     )
     def close_task(self, request, pk):
-        if request.user.is_staff or request.user.is_director():
+        current_employee = request.user
+        if current_employee.is_staff or current_employee.is_director():
             current_task = get_object_or_404(Task, pk=pk)
         else:
             current_task = get_object_or_404(
                 Task,
                 pk=pk,
-                initiator=request.user.id,
+                initiator=current_employee.id,
                 is_completed=True
             )
 

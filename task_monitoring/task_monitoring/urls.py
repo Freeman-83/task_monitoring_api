@@ -3,12 +3,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from drf_spectacular.views import (SpectacularAPIView,
-                                   SpectacularRedocView,
-                                   SpectacularSwaggerView)
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('departments.urls', namespace='departments')),
     path('api/', include('tasks.urls', namespace='tasks')),
     path('api/', include('users.urls', namespace='users')),
 

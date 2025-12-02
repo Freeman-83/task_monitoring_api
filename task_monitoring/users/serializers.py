@@ -4,8 +4,6 @@ from djoser.serializers import UserSerializer, UserCreateSerializer
 
 from rest_framework import serializers
 
-from .models import Department
-
 
 User = get_user_model()
 
@@ -21,9 +19,7 @@ class RegisterUserSerializer(UserCreateSerializer):
             'last_name',
             'first_name',
             'second_name',
-            'password',
-            'department',
-            'role'
+            'password'
         )
 
     def validate_email(self, value):
@@ -49,90 +45,5 @@ class CustomUserSerializer(UserSerializer):
             'email',
             'last_name',
             'first_name',
-            'second_name',
-            'department',
-            'role',
-            'initiator_tasks_count',
-            'execution_tasks_count',
-            'initiator_tasks',
-            'execution_tasks'
-        )
-
-    def get_initiator_tasks_count(self, user):
-        return user.initiator_tasks.count()
-    
-    def get_execution_tasks_count(self, user):
-        return user.execution_tasks.count()
-
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if data['department']:
-            data['department'] = instance.department.name
-        data['initiator_tasks'] = []
-        for task in instance.initiator_tasks.all():
-            data['initiator_tasks'].append(
-                {
-                    'group': task.group.name,
-                    'title': task.title,
-                    'number': task.number,
-                    'assignment_date': task.assignment_date,
-                    'execution_date': task.execution_date,
-                    'is_closed': task.is_closed,
-                    'is_completed': task.is_completed
-                }
-            )
-        data['execution_tasks'] = []
-        for task in instance.execution_tasks.all():
-            data['execution_tasks'].append(
-                {
-                    'group': task.group.name,
-                    'title': task.title,
-                    'number': task.number,
-                    'initiator': f'{task.initiator.last_name} {task.initiator.first_name}',
-                    'assignment_date': task.assignment_date,
-                    'execution_date': task.execution_date,
-                    'is_closed': task.is_closed,
-                    'is_completed': task.is_completed
-                }
-            )
-
-        return data
-
-
-class CustomUserContextSerializer(serializers.ModelSerializer):
-    """Контекстный сериализатор Пользователя."""
-
-    class Meta:
-        model = User
-        fields = (
-            'id',
-            'last_name',
-            'first_name',
-            'second_name',
-            'department',
-            'role'
-        )
-    
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        if data['department']:
-            data['department'] = instance.department.name
-        return data
-
-
-class DepartmentSerializer(serializers.ModelSerializer):
-    """Кастомный сериализатор Подразделения."""
-
-    employees = CustomUserContextSerializer(
-        read_only=True,
-        many=True
-    )
-
-    class Meta:
-        model = Department
-        fields = (
-            'id',
-            'name',
-            'curator',
-            'employees'
+            'second_name'
         )

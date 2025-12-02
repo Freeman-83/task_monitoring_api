@@ -2,7 +2,7 @@ from django.urls import include, path
 
 from rest_framework import routers
 
-from users.views import CustomUserViewSet, DepartmentViewSet
+from users.views import CustomUserViewSet
 
 
 app_name = 'users'
@@ -14,11 +14,7 @@ router_users_v1.register(
     CustomUserViewSet,
     basename='users'
 )
-router_users_v1.register(
-    'departments',
-    DepartmentViewSet,
-    basename='departments'
-)
+
 
 urlpatterns = [
     path('', include(router_users_v1.urls)),

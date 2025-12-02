@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'departments.apps.DepartmentsConfig',
     'tasks.apps.TasksConfig',
     'users.apps.UsersConfig',
     'rest_framework',

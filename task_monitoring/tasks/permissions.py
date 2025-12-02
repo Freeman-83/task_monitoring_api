@@ -8,18 +8,18 @@ class IsAdminOrManagerOrReadOnly(permissions.BasePermission):
             (request.method in permissions.SAFE_METHODS
              and request.user.is_authenticated)
             or request.user.is_authenticated
-            and (request.user.is_staff
-                 or request.user.is_director()
-                 or request.user.is_deputy_director()
-                 or request.user.is_head_department()
-                 or request.user.is_deputy_head_department())
+            and (request.user.employee.is_admin()
+                 or request.user.employee.is_director()
+                 or request.user.employee.is_deputy_director()
+                 or request.user.employee.is_head_department()
+                 or request.user.employee.is_deputy_head_department())
         )
 
     def has_object_permission(self, request, view, obj):
         return (
             (request.method in permissions.SAFE_METHODS
-             and request.user in obj.executors.all())
-            or request.user.is_staff
-            or request.user.is_director()
-            or obj.initiator == request.user
+             and request.user.employee in obj.executors.all())
+            or request.user.employee.is_admin()
+            or request.user.employee.is_director()
+            or obj.initiator == request.user.employee
         )
