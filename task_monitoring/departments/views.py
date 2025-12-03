@@ -40,7 +40,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     destroy=extend_schema(summary='Удаление данных сотрудника'),
 )
 class EmployeeViewSet(viewsets.ModelViewSet):
-    """Вьюсет Сотрудника организации."""
+    """Вьюсет профиля Сотрудника."""
 
     queryset = Employee.objects.select_related('user', 'department').all()
     serializer_class = EmployeeCreateSerializer

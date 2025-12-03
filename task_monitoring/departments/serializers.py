@@ -5,7 +5,7 @@ from users.serializers import CustomUserSerializer
 
 
 class EmployeeCreateSerializer(serializers.ModelSerializer):
-    """Кастомный сериализатор для создания Сотрудника."""
+    """Сериализатор для создания профиля Сотрудника."""
 
     class Meta:
         model = Employee
@@ -17,7 +17,7 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
     
 
 class EmployeeGetSerializer(serializers.ModelSerializer):
-    """Кастомный сериализатор Сотрудника."""
+    """Сериализатор профиля Сотрудника."""
 
     user = CustomUserSerializer(read_only=True)
     initiator_tasks_count = serializers.SerializerMethodField()

@@ -49,7 +49,7 @@ class Department(models.Model):
 
 
 class Employee(models.Model):
-    """Модель Сотрудника организации."""
+    """Модель Сотрудника."""
 
     user = models.OneToOneField(
         User,

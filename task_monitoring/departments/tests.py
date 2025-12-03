@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
-from tasks.models import Task, Group
 from departments.models import Employee, Department, ROLE_CHOICES
 
 
@@ -11,16 +10,18 @@ User = get_user_model()
 
 
 class EmployeeTests(APITestCase):
-    """Тестирование кейса сотрудников."""
+    """Тестирование кейса Сотрудников."""
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.admin_token = 'admin_token'
-        cls.director_token = 'director_token'
-        cls.head_department_token = 'head_department_token'
-
+        admin_token = 'admin_token'
+        director_token = 'director_token'
+        deputy_director_token = 'deputy_director_token'
+        head_department_token = 'head_department_token_1'
+        deputy_head_department_token = 'deputy_head_department_token'
+        employee_token = 'employee_token_1'
 
         cls.admin_user = User.objects.create(
             email='admin@mail.ru',
@@ -31,96 +32,182 @@ class EmployeeTests(APITestCase):
         )
         cls.director_user = User.objects.create(
             email='director@mail.ru',
+            first_name='Иван',
+            second_name='Иванович',
+            last_name='Иванов',
+        )
+        cls.deputy_director_user = User.objects.create(
+            email='deputy_director@mail.ru',
             first_name='Петр',
             second_name='Петрович',
             last_name='Петров'
         )
-        cls.deputy_director_user = User.objects.create(
-            email='deputy_director@mail.ru',
-            first_name='Иван',
-            second_name='Иванович',
-            last_name='Иванов'
-        )
         cls.head_department_user = User.objects.create(
-            email='head_department@mail.ru',
+            email='head_department1@mail.ru',
             first_name='Сидор',
             second_name='Сидорович',
             last_name='Сидоров'
         )
+        cls.deputy_head_department_user = User.objects.create(
+            email='deputy_head_department@mail.ru',
+            first_name='Глеб',
+            second_name='Глебович',
+            last_name='Глебов'
+        )
+        cls.employee_user = User.objects.create(
+            email='employee1@mail.ru',
+            first_name='Борис',
+            second_name='Борисович',
+            last_name='Борисов'
+        )
 
-
+        cls.guest_client = APIClient()
         cls.auth_admin = APIClient()
         cls.auth_director = APIClient()
+        cls.auth_deputy_director = APIClient()
         cls.auth_head_department = APIClient()
-
+        cls.auth_deputy_head_department = APIClient()
+        cls.auth_employee = APIClient()
 
         cls.auth_admin.force_authenticate(
             cls.admin_user,
-            cls.admin_token
+            admin_token
         )
         cls.auth_director.force_authenticate(
             cls.director_user,
-            cls.director_token
+            director_token
+        )
+        cls.auth_deputy_director.force_authenticate(
+            cls.deputy_director_user,
+            deputy_director_token
         )
         cls.auth_head_department.force_authenticate(
             cls.head_department_user,
-            cls.head_department_token
+            head_department_token
+        )
+        cls.auth_deputy_head_department.force_authenticate(
+            cls.deputy_head_department_user,
+            deputy_head_department_token
+        )
+        cls.auth_employee.force_authenticate(
+            cls.employee_user,
+            employee_token
         )
 
-
-        cls.director_employee = Employee.objects.create(
-            user=cls.director_user,
-            role=ROLE_CHOICES[0][0]
-        )
         cls.department = Department.objects.create(
-            name='test department',
-            curator=cls.director_employee
+            name='test department'
         )
+
         cls.admin_employee = Employee.objects.create(
             user=cls.admin_user,
             department=cls.department,
             role=ROLE_CHOICES[4][0]
+        )
+        cls.director_employee = Employee.objects.create(
+            user=cls.director_user,
+            role=ROLE_CHOICES[0][0]
+        )
+        cls.deputy_director_employee = Employee.objects.create(
+            user=cls.deputy_director_user,
+            role=ROLE_CHOICES[1][0]
         )
         cls.head_department_employee = Employee.objects.create(
             user=cls.head_department_user,
             department=cls.department,
             role=ROLE_CHOICES[2][0]
         )
+        cls.deputy_head_department_employee = Employee.objects.create(
+            user=cls.deputy_head_department_user,
+            department=cls.department,
+            role=ROLE_CHOICES[3][0]
+        )
+        cls.employee = Employee.objects.create(
+            user=cls.employee_user,
+            department=cls.department
+        )
 
-        cls.employee_data = {
-            'user': cls.deputy_director_user.id,
-            'role': ROLE_CHOICES[1][0]
-        }
+        cls.department.curator = cls.director_employee
 
         cls.employee_url = '/api/employees/'
         cls.department_url = '/api/departments/'
 
 
-    def test_create_employee(self):
-        """Проверка создания сотрудника Админом."""
+    def test_create_employee_admin_only(self):
+        """Проверка прав на создание профиля сотрудника."""
 
-        response = EmployeeTests.auth_admin.post(
-            EmployeeTests.employee_url,
-            EmployeeTests.employee_data
+        self.test_user = User.objects.create(
+            email='test_user@mail.ru',
+            first_name='Тест',
+            second_name='Тест',
+            last_name='Тест'
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.employee_data = {
+            'user': self.test_user.id,
+            'role': ROLE_CHOICES[1][0]
+        }
+
+        tests_data = {
+            EmployeeTests.auth_director: [
+                'director', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_head_department: [
+                'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ],
+            EmployeeTests.auth_admin: [
+                'admin', status.HTTP_201_CREATED
+            ],
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.post(
+                    EmployeeTests.employee_url, self.employee_data
+                ).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
 
 
     def test_get_current_employee(self):
         """Проверка прав на просмотр профиля сотрудника."""
 
-        current_user_url = f'{EmployeeTests.employee_url}{EmployeeTests.head_department_employee.id}/'
+        current_user_url = EmployeeTests.employee_url + f'{EmployeeTests.head_department_employee.id}/'
 
         tests_data = {
-            EmployeeTests.auth_head_department: [
-                'head_department', status.HTTP_200_OK
-            ],
             EmployeeTests.auth_admin: [
                 'admin', status.HTTP_200_OK
             ],
+            EmployeeTests.auth_head_department: [
+                'head_department', status.HTTP_200_OK
+            ],
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
+            
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
             ]
         }
 
@@ -135,7 +222,7 @@ class EmployeeTests(APITestCase):
     def test_partial_update_current_employee(self):
         """Проверка прав на изменение профиля сотрудника."""
 
-        current_user_url = f'{EmployeeTests.employee_url}{EmployeeTests.head_department_employee.id}/'
+        current_user_url = EmployeeTests.employee_url + f'{EmployeeTests.head_department_employee.id}/'
 
         changes_data = {'role': ROLE_CHOICES[1][0]}
 
@@ -143,8 +230,20 @@ class EmployeeTests(APITestCase):
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
             ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
             EmployeeTests.auth_head_department: [
                 'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
             ],
             EmployeeTests.auth_admin: [
                 'admin', status.HTTP_200_OK
@@ -168,8 +267,20 @@ class EmployeeTests(APITestCase):
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
             ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
             EmployeeTests.auth_head_department: [
                 'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
             ],
             EmployeeTests.auth_admin: [
                 'admin', status.HTTP_204_NO_CONTENT
@@ -185,7 +296,7 @@ class EmployeeTests(APITestCase):
     
 
     def test_create_department(self):
-        """Проверка прав на создание нового отдела только для админа."""
+        """Проверка прав на создание нового подразделения."""
 
         self.department_data = {
             'name': 'test_department',
@@ -196,8 +307,20 @@ class EmployeeTests(APITestCase):
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
             ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
             EmployeeTests.auth_head_department: [
                 'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
             ],
             EmployeeTests.auth_admin: [
                 'admin', status.HTTP_201_CREATED
@@ -216,16 +339,28 @@ class EmployeeTests(APITestCase):
 
 
     def test_update_department(self):
-        """Проверка прав на изменение данных об отделе только для админа."""
+        """Проверка прав на изменение данных о подразделении."""
 
-        current_department_url = f'/api/departments/{EmployeeTests.department.id}/'
+        current_department_url = EmployeeTests.department_url + f'{EmployeeTests.department.id}/'
 
         tests_data = {
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
             ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
             EmployeeTests.auth_head_department: [
                 'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
             ],
             EmployeeTests.auth_admin: [
                 'admin', status.HTTP_200_OK
@@ -244,16 +379,28 @@ class EmployeeTests(APITestCase):
 
 
     def test_delete_department(self):
-        """Проверка прав на удаление данных об отделе только для админа."""
+        """Проверка прав на удаление данных о подразделении."""
 
-        current_department_url = f'/api/departments/{EmployeeTests.department.id}/'
+        current_department_url = EmployeeTests.department_url + f'{EmployeeTests.department.id}/'
 
         tests_data = {
             EmployeeTests.auth_director: [
                 'director', status.HTTP_403_FORBIDDEN
             ],
+            EmployeeTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_403_FORBIDDEN
+            ],
             EmployeeTests.auth_head_department: [
                 'head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.auth_employee: [
+                'employee', status.HTTP_403_FORBIDDEN
+            ],
+            EmployeeTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
             ],
             EmployeeTests.auth_admin: [
                 'admin', status.HTTP_204_NO_CONTENT
