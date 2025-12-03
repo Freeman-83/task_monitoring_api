@@ -77,13 +77,15 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_class = TaskFilterSet
     ordering_fields = ('execution_date',)
 
-    # def create(self, request, *args, **kwargs):
-    #     data = request.data.copy()
-    #     data['initiator'] = request.user.employee.id
-    #     serializer = self.get_serializer(data=data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        if not request.user.is_staff:
+            data = request.data.copy()
+            data['initiator'] = request.user.employee.id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
 
@@ -151,7 +153,7 @@ class TaskViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TaskGetSerializer
         return super().get_serializer_class()
-    
+
 
     @extend_schema(summary='Поручения на исполнении')
     @action(
