@@ -86,7 +86,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_queryset(self):
-        
 
         if (not self.request.user.is_staff
             and not self.request.user.employee.is_director()):
