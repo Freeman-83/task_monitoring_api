@@ -172,10 +172,13 @@ class TaskTests(APITestCase):
             name='test group 1'
         )
 
+        cls.group_url = '/api/groups/'
+        cls.task_url = '/api/tasks/'
+
 
     def setUp(self):
 
-        task_data = {
+        task_data_1 = {
             'title': 'test task 1',
             'number': '1',
             'initiator': TaskTests.director_employee,
@@ -183,14 +186,23 @@ class TaskTests(APITestCase):
             'execution_date': date.today() + timedelta(days=10),
             'resolution': 'test resolution 1'
         }
-        self.task = Task.objects.create(**task_data)
-        self.task.executors.set([TaskTests.deputy_director_employee,])
+
+        task_data_2 = {
+            'title': 'test task 2',
+            'number': '2',
+            'initiator': TaskTests.deputy_director_employee,
+            'group': TaskTests.group,
+            'execution_date': date.today() + timedelta(days=10),
+            'resolution': 'test resolution 2'
+        }
+        self.task_1 = Task.objects.create(**task_data_1)
+        self.task_2 = Task.objects.create(**task_data_2)
+        self.task_1.executors.set([TaskTests.deputy_director_employee,])
+        self.task_2.executors.set([TaskTests.head_department_1_employee,])
 
 
     def test_get_groups(self):
         """Проверка прав на просмотр групп для Админа."""
-
-        url = '/api/groups/'
 
         tests_data = {
             TaskTests.auth_admin: [
@@ -218,7 +230,7 @@ class TaskTests(APITestCase):
 
         for response_subject, data in tests_data.items():
             self.assertEqual(
-                response_subject.get(url).status_code,
+                response_subject.get(TaskTests.group_url).status_code,
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
@@ -226,8 +238,6 @@ class TaskTests(APITestCase):
 
     def test_create_group(self):
         """Проверка прав на создание группы для Админа."""
-
-        url = '/api/groups/'
 
         group_data = {'name': 'test group 2'}
 
@@ -256,7 +266,7 @@ class TaskTests(APITestCase):
         }
         for response_subject, data in tests_data.items():
             self.assertEqual(
-                response_subject.post(url, group_data).status_code,
+                response_subject.post(TaskTests.group_url, group_data).status_code,
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
@@ -264,8 +274,6 @@ class TaskTests(APITestCase):
 
     def test_get_tasks(self):
         """Проверка прав на просмотр поручений для разных пользователей."""
-
-        url = '/api/tasks/'
         
         tests_status_data = {
             TaskTests.auth_admin: [
@@ -293,16 +301,16 @@ class TaskTests(APITestCase):
 
         tests_queryset_data = {
             TaskTests.auth_admin: [
-                'admin', self.task.id
+                'admin', self.task_1.id
             ],
             TaskTests.auth_director: [
-                'director', self.task.id
+                'director', self.task_1.id
             ],
             TaskTests.auth_deputy_director: [
-                'deputy_director', self.task.id
+                'deputy_director', self.task_1.id
             ],
             TaskTests.auth_head_department_1: [
-                'head_department', []
+                'head_department', self.task_2.id
             ],
             TaskTests.auth_deputy_head_department: [
                 'deputy_head_department', []
@@ -314,15 +322,15 @@ class TaskTests(APITestCase):
 
         for response_subject, data in tests_status_data.items():
             self.assertEqual(
-                response_subject.get(url).status_code,
+                response_subject.get(TaskTests.task_url).status_code,
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
 
         for response_subject, response_data in tests_queryset_data.items():
-            result = response_subject.get(url).data.get('results')
+            result = response_subject.get(TaskTests.task_url).data.get('results')
             self.assertEqual(
-                response_subject.get(url).data.get('results')[0]['id'] if result else result,
+                response_subject.get(TaskTests.task_url).data.get('results')[0]['id'] if result else result,
                 response_data[1],
                 f'Результат запроса для "{response_data[0]}" не соответствует ожидаемому!'
             )
@@ -334,7 +342,7 @@ class TaskTests(APITestCase):
         и недоступности для остального персонала (кроме админа).
         """
 
-        url = f'/api/tasks/{self.task.id}/'
+        url = TaskTests.task_url + f'{self.task_1.id}/'
 
         tests_data = {
             TaskTests.auth_admin: [
@@ -371,14 +379,12 @@ class TaskTests(APITestCase):
     def test_create_task(self):
         """Проверка создания поручения и соответствующих прав."""
 
-        url = '/api/tasks/'
-
         task_data = {
-            'title': 'test task 2',
-            'number': '2',
+            'title': 'test task 3',
+            'number': '3',
             'group': self.group.id,
             'execution_date': date.today() + timedelta(days=10),
-            'resolution': 'test resolution 2',
+            'resolution': 'test resolution 3',
             'executors': [TaskTests.employee_1.id,]
         }
 
@@ -411,7 +417,7 @@ class TaskTests(APITestCase):
 
         for response_subject, data in tests_data.items():
             self.assertEqual(
-                response_subject.post(url, task_data).status_code,
+                response_subject.post(TaskTests.task_url, task_data).status_code,
                 data[1],
                 f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
             )
@@ -421,13 +427,13 @@ class TaskTests(APITestCase):
     def test_redirect_task(self):
         """Проверка создания перенаправление поручения и соответствующих прав."""
 
-        url = '/api/tasks/{}/redirect_task/'
+        url = TaskTests.task_url + '{}/redirect_task/'
 
         response_executor_deputy_director = TaskTests.auth_deputy_director.post(
-            url.format(self.task.id),
+            url.format(self.task_1.id),
             {'executors': [TaskTests.head_department_1_employee.id,],
              'resolution': 'redirected_resolution',
-             'execution_date': self.task.execution_date - timedelta(days=1)},
+             'execution_date': self.task_1.execution_date - timedelta(days=1)},
              content_type='application/json'
         )
         response_executor_head_department_1 = TaskTests.auth_head_department_1.post(
@@ -483,11 +489,250 @@ class TaskTests(APITestCase):
             )
 
 
+    def test_get_outgoing_tasks(self):
+        """Проверка получения исходящих поручений соответствующими инициаторами."""
+
+        url = TaskTests.task_url + 'get_outgoing_tasks/'
+
+        tests_data = {
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK, 2
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_head_department_1: [
+                'supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_head_department_2: [
+                'not_supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_employee_2: [
+                'employee', status.HTTP_200_OK, 0
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+            if response_subject != TaskTests.guest_client:
+                self.assertEqual(
+                    response_subject.get(url).data['count'],
+                    data[2],
+                    f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+                )
+
+
+    def test_get_on_execution_tasks(self):
+        """Проверка получения поручений на исполнение соответствующими исполнителями."""
+
+        url = TaskTests.task_url + 'get_on_execution_tasks/'
+
+        tests_data = {
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK, 2
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_head_department_1: [
+                'supervisor_head_department', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_head_department_2: [
+                'not_supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_employee_2: [
+                'employee', status.HTTP_200_OK, 0
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+            if response_subject != TaskTests.guest_client:
+                self.assertEqual(
+                    response_subject.get(url).data['count'],
+                    data[2],
+                    f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+                )
+
+
+    def test_get_on_close_tasks(self):
+        """Проверка получения поручений на закрытие соответствующими инициаторами."""
+
+        url = TaskTests.task_url + 'get_on_close_tasks/'
+
+        self.task_1.is_completed = True
+        self.task_1.save()
+
+        tests_data = {
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_head_department_1: [
+                'supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_head_department_2: [
+                'not_supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_employee_2: [
+                'employee', status.HTTP_200_OK, 0
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+            if response_subject != TaskTests.guest_client:
+                self.assertEqual(
+                    response_subject.get(url).data['count'],
+                    data[2],
+                    f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+                )
+
+
+    def test_get_urgent_tasks(self):
+        """Проверка получения срочных поручений соответствующими исполнителями."""
+
+        url = TaskTests.task_url + 'get_urgent_tasks/'
+
+        self.task_1.execution_date = date.today() + timedelta(days=1)
+        self.task_1.save()
+
+        tests_data = {
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_head_department_1: [
+                'supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_head_department_2: [
+                'not_supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_employee_2: [
+                'employee', status.HTTP_200_OK, 0
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+            if response_subject != TaskTests.guest_client:
+                self.assertEqual(
+                    response_subject.get(url).data['count'],
+                    data[2],
+                    f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+                )
+
+
+    def test_get_overdue_tasks(self):
+        """Проверка получения просроченных поручений соответствующими исполнителями."""
+
+        url = TaskTests.task_url + 'get_overdue_tasks/'
+
+        self.task_1.execution_date = date.today() - timedelta(days=1)
+        self.task_1.save()
+
+        tests_data = {
+            TaskTests.auth_admin: [
+                'admin', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_director: [
+                'director', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_director: [
+                'deputy_director', status.HTTP_200_OK, 1
+            ],
+            TaskTests.auth_head_department_1: [
+                'supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_head_department_2: [
+                'not_supervisor_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_deputy_head_department: [
+                'deputy_head_department', status.HTTP_200_OK, 0
+            ],
+            TaskTests.auth_employee_2: [
+                'employee', status.HTTP_200_OK, 0
+            ],
+            TaskTests.guest_client: [
+                'guest_client', status.HTTP_401_UNAUTHORIZED
+            ]
+        }
+
+        for response_subject, data in tests_data.items():
+            self.assertEqual(
+                response_subject.get(url).status_code,
+                data[1],
+                f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+            )
+            if response_subject != TaskTests.guest_client:
+                self.assertEqual(
+                    response_subject.get(url).data['count'],
+                    data[2],
+                    f'Статус запроса для "{data[0]}" не соответствует ожидаемому!'
+                )
+
+
     def test_complete_and_close_task(self):
         """Проверка отметки исполнения поручения исполнителем и автором."""
 
-        url_executor = '/api/tasks/{}/complete_task/'
-        url_author = '/api/tasks/{}/close_task/'
+        url_executor = TaskTests.task_url + '{}/complete_task/'
+        url_author = TaskTests.task_url + '{}/close_task/'
 
         users: list = [
             TaskTests.director_employee,
@@ -589,7 +834,7 @@ class TaskTests(APITestCase):
     def test_update_task(self):
         """Проверка изменения поручения инициатором и админом."""
 
-        url = f'/api/tasks/{self.task.id}/'
+        url = TaskTests.task_url + f'{self.task_1.id}/'
 
         initiator_data_for_update = {
             'execution_date': date.today() + timedelta(days=11),
@@ -637,7 +882,7 @@ class TaskTests(APITestCase):
     def test_initiator_delete_task(self):
         """Проверка удаления поручения инициатором."""
 
-        url = f'/api/tasks/{self.task.id}/'
+        url = TaskTests.task_url + f'{self.task_1.id}/'
 
         tests_status_data = {
             TaskTests.auth_deputy_director: [
@@ -671,7 +916,7 @@ class TaskTests(APITestCase):
     def test_admin_delete_task(self):
         """Проверка удаления поручения админом."""
 
-        url = f'/api/tasks/{self.task.id}/'
+        url = TaskTests.task_url + f'{self.task_1.id}/'
 
         tests_status_data = {
             TaskTests.auth_deputy_director: [

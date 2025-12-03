@@ -77,7 +77,7 @@ class EmployeeGetSerializer(serializers.ModelSerializer):
 
 
 class EmployeeContextSerializer(serializers.ModelSerializer):
-    """Контекстный сериализатор Сотрудника."""
+    """Контекстный сериализатор профиля Сотрудника."""
 
     user = serializers.StringRelatedField()
     department = serializers.StringRelatedField()
@@ -93,7 +93,7 @@ class EmployeeContextSerializer(serializers.ModelSerializer):
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
-    """Кастомный сериализатор Подразделения."""
+    """Сериализатор Подразделения."""
 
     employees = EmployeeContextSerializer(
         read_only=True,
